@@ -1,0 +1,343 @@
+\documentclass{article}
+\usepackage{graphicx, amsfonts, amsmath, amsthm}
+\usepackage{natbib}
+\bibliographystyle{unsrtnat}
+\usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{xcolor}
+\newcommand{\argmin}{\text{argmin}}
+\newcommand{\argmax}{\text{argmax}}
+\newcommand{\veps}{\varepsilon}
+\newcommand{\bPp}{\bPartial}
+\newcommand{\sign}{\operatorname{sign}}
+\newcommand{\wt}{\widetilde}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\bQ}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\bP}{\mathbb{P}}
+\newcommand{\calF}{\mathcal{F}}
+\newcommand{\calB}{\mathcal{B}}
+\newcommand{\calG}{\mathcal{G}}
+\newcommand{\calH}{\mathcal{H}}
+\newcommand{\calP}{\mathcal{P}}
+
+\setlength{\textheight}{8.5in}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\parindent}{0pt}
+
+\title{Applied Qual Study Guide}
+\author{Ting Chen}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Statistical Models}
+For these models, the following questions are to be answered:
+\begin{itemize}
+  \item Model assumptions
+  \item Estimation. Usually there are more than one way to estimate model parameters, each of which arises from their own context and requires different assumptions
+  \item Inference questions: Frequentist distribution, confidence intervals, posterior-distribution based uncertainty measures, etc.
+  \item Model diagnosis and refinement; robustness of estimation and inference to assumptions.
+  \item Model selection/regularization and their computation
+\end{itemize}
+
+\subsection{Linear model}
+BLUE
+\begin{itemize}
+  \item Best (least variance)
+  \item Linear
+  \item Unbiased
+  \item Estimator
+\end{itemize}
+Gauss-Markov Theorem - no better linear unbiased estimator exists.\newline \\
+\textbf{Proof:}\\
+Consider linear estimate of $\hat{\beta} = \sum_{i=1}^{n}a_i(y_i - \bar{y})$. Then the bias is
+$$\mathbb{E}_\varepsilon[\hat{\beta}] = \mathbb{E}_\varepsilon\left[\sum_{i=1}^{n}a_i(\alpha + \beta x_i + \varepsilon_i - \bar{y})\right] = \mathbb{E}_\varepsilon\left[\sum_{i=1}^{n}a_i(\bar{y} - \beta \bar{x} + \beta x_i + \varepsilon_i - \bar{y})\right] = \beta \sum_{i=1}^{n}a_i(x_i - \bar{x})$$
+and the variance is
+\begin{align*}
+  \mathtt{Var}_\varepsilon[\hat{\beta}] &= \mathtt{Var}_\varepsilon[\hat{\beta} - \beta] \\
+  &= \mathtt{Var}_\varepsilon\left[\sum_{i=1}^{n}a_i(y_i - \bar{y}) - \beta\right] \\
+  &= \mathtt{Var}_\varepsilon\left[\sum_{i=1}^{n}a_i(\beta(x_i - \bar{x}) + (\varepsilon_i - \bar{\varepsilon})) - \beta\right]\\
+  &= \mathtt{Var}_\varepsilon\left[\beta\sum_{i=1}^{n}a_i(x_i - \bar{x}) + \sum_{i=1}^{n}a_i(\varepsilon_i - \bar{\varepsilon}) - \beta\right]\\
+  &= \mathtt{Var}_\varepsilon\left[\sum_{i=1}^{n}a_i(\varepsilon_i - \bar{\varepsilon})\right]\\
+  &= \mathtt{Var}_\varepsilon\left[\sum_{i=1}^{n}\varepsilon_i(a_i - \bar{a})\right]\\
+  &= \sigma^2_\varepsilon \sum_{i=1}^{n}(a_i - \bar{a})^2
+\end{align*}
+To show the OLS estimates are BLUE, we then solve the constrained minimization problem via Lagrangian multipliers.
+\begin{align*}
+  \min_{a_1, \ldots, a_n} \quad &\sum_{i=1}^{n}(a_i - \bar{a})^2 = \sum_{i=1}^{n}a_i^2 - n\bar{a}\\
+  \textrm{s.t.} \quad & \sum_{i=1}^{n}a_i(x_i - \bar{x}) = 1
+\end{align*}
+Taking the derivative wrt to $a_i$ and plugging back into the constraint to get a value for $\lambda$ yields
+$$a_i = \frac{x_i - \bar{x}}{\sum_{i=1}^{n}(x_i - \bar{x})^2} $$
+as desired.
+\subsubsection{Model assumptions}
+\begin{enumerate}
+  \item Gaussian errors - not really needed
+  \item Homoskedasdicity
+  \item Additive and linear relationship
+  \item errors are i.i.d. - not really needed, just uncorrelated and homoskedastic errors
+  \item zero mean errors
+    % \item Independent variables are not highly correlated (no multicollinearity)
+\end{enumerate}
+
+When $x$ and $y$ are standardized, the regression line always has slope less than 1.
+Thus, when $x$ is 1 standard deviation above the mean, the predicted value of $y$ is somewhere between 0 and 1 standard deviations above the mean. This phenomenon in linear models—that y is predicted to be closer to the mean (in standard-deviation units) than x—is called regression to the mean and occurs in many vivid contexts.
+\subsubsection{Estimation}
+\begin{enumerate}
+  \item (O)Least Squares, directly, maximum likelihood estimate:
+    $$ y_i = \alpha + \beta x_i + \varepsilon_i $$ for $i=1,\ldots, n$.
+    Want to minimize SSE
+    $$ SSE(\alpha, \beta) = \sum_{i=1}^{n} (y_i - \hat{y})^2 = \sum_{i=1}^{n} (y_i - (\alpha + \beta x_i))^2$$
+    Taking the derivatives and solving, we get
+    $$ \hat{\beta} = \frac{\sum_{i=1}^{n}(y_i - \bar{y})(x_i - \bar{x})}{\sum_{i=1}^{n}(x_i - \bar{x})^2} = \frac{\mathtt{cov}(x, y)}{\mathtt{var}(x)} = \rho_{x, y} \cdot \frac{s_y}{s_x}$$
+    $$ \hat{\alpha} = \bar{y} - \hat{\beta} \bar{x}$$
+
+    Where $s_y = \sqrt{\sum_{i=1}^{n}(y_i - \bar{y})^2}$,  $s_x = \sqrt{\sum_{i=1}^{n}(x_i - \bar{x})^2}$ (Note: This form of $\alpha$ implies that the regression line must pass through ($\bar{x}$, $\bar{y}$)), and
+    $$\rho_{x, y} = \frac{\sum_{i=1}^{n}(y_i - \bar{y})(x_i - \bar{x})}{s_x s_y} = \frac{\sum_{i=1}^{n}x_iy_i - n\bar{x}\bar{y}}{\sqrt{\sum_{i=1}^{n}x_i^2 - n \bar{x}^2}\sqrt{\sum_{i=1}^{n}y_i^2 - n \bar{y}^2}}$$
+    You get regression to the mean if $\rho_{x, y} < 1$. Some useful properties include
+    \begin{enumerate}
+      \item $\sum_{i=1}^{n} \hat{\epsilon}_i= 0$ $\leftarrow$ take derivative of SSE wrt $\alpha$
+      \item $\sum_{i=1}^{n} x_i\hat{\epsilon}_i= 0$ $\leftarrow$ take derivative of SSE wrt $\beta$
+      \item $\sum_{i=1}^{n} \hat{y}_i\hat{\epsilon}_i= 0$ $\leftarrow$ consequence of the above
+    \end{enumerate}
+    which is a consequence of the first order conditions.
+    \\ \\
+    Note $$ SSE = \mathbb{E}[(Y - \mathbb{E}[Y|X])^2] + \mathbb{E}[(\mathbb{E}(Y|X) - (a + bX))^2] $$
+    (Cross term drops because noise is independent), hence least squares estimate is best linear approximation to $\mathbb{E}[Y|X = x]$.
+    \\ \\
+    Thought experiment assuming $X$ is standard Gaussian, can show via Stein's identity that by minimizing MSE, we are estimating slope of regression function (averaged derivative under Gaussian).
+    \\ \\
+    Also note that the error variance is $$ \hat{\sigma}^2 = \frac{1}{n-2} \sum_{i}r_i^2 $$
+    where $r_i := y_i - \hat{y}_i = y_i - (\hat{\alpha} - \hat{\beta}x_i)$.
+  \item Gradient descent/Newton-Raphson if more params than observations or multicollinearity, can go for regularization to solve this too,
+  \item Moore-Penrose pseudo-inverse,
+  \item Bayesian methods (MAP, MCMC, VI, etc.)
+\end{enumerate}
+\subsubsection{Inference questions}
+The sampling distribution of the estimates slope, intercept and residual variance, conditional on $x_1, \ldots, x_n$, are as follows: $\bar{\epsilon} = 0$ from distribution of errors,
+$$ \hat{\beta} = \beta + \frac{\sum_{i=1}^{n}(x_i - \bar{x})(\epsilon_i - \bar{\epsilon})}{\sum_{i=1}^{n}(x_i - \bar{x})^2} \sim \mathcal{N}\left(\beta, \frac{\sigma^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right)$$
+Since $\bar{y} \perp \hat{\beta}\bar{x}$,
+$$ \hat{\alpha} = \bar{y} - \hat{\beta}\bar{x} \sim \mathcal{N}\left(\alpha, \sigma^2\left[ \frac{1}{n} + \frac{\bar{x}^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right]\right) $$
+Finally
+$$ \hat{\sigma}^2 \sim \sigma^2 \chi^2_{n-2}/(n-2) $$
+and note that $(\hat{\alpha}, \hat{\beta}) \perp \hat{\sigma}^2$.
+% \textbf{Proof: Distribution of Residual Variance using Idempotent Matrix $\chi^2$ Theorem}
+Consider the linear regression model:
+\[
+  Y = X\beta + \varepsilon, \quad \varepsilon \sim N_n(0, \sigma_0^2 I).
+\]
+
+The least squares estimator is:
+\[
+  \hat{Y} = HY, \quad \text{where } H = X(X^\top X)^{-1}X^\top.
+\]
+
+Then the residual vector is:
+\[
+  e = Y - \hat{Y} = (I - H)Y = (I - H)\varepsilon,
+\]
+because \( HX\beta = X\beta \).
+
+The residual sum of squares (RSS) is:
+\[
+  \text{RSS} = e^\top e = \varepsilon^\top (I - H)\varepsilon.
+\]
+
+Now apply the \textbf{idempotent matrix chi-square theorem} \href{https://www.statlect.com/probability-distributions/normal-distribution-quadratic-forms}{see link here}:
+
+\begin{itemize}
+  \item \( \varepsilon \sim N_n(0, \sigma_0^2 I) \)
+  \item \( I - H \) is symmetric and idempotent
+  \item \( \text{rank}(I - H) = n - \text{rank}(H) = n - p \), where \( p = \text{number of parameters in } \beta \)
+\end{itemize}
+
+In simple linear regression, \( p = 2 \), so:
+\[
+  \frac{1}{\sigma_0^2}\varepsilon^\top (I - H)\varepsilon \sim \chi^2_{n - 2}.
+\]
+
+Hence,
+\[
+  \hat{\sigma}^2 = \frac{1}{n - 2} \varepsilon^\top (I - H)\varepsilon \sim \frac{\sigma_0^2}{n - 2} \chi^2_{n - 2}.
+\]\\
+
+Confidence intervals on coefficients with $t$-dist,
+Compare models with $F$-test,
+Test variance with $\chi^2$-test.\\
+
+Interpret coefficients: ``Also the coefficient on sex is more interpretable as it directly represents on average, keeping  all other independent variables constant, the average increase/decrease in the tests scores of men compared to women.''
+\subsubsection{Model diagnosis and refinement}
+\begin{itemize}
+  \item Autocorrelation
+  \item multicollinearity - use instrumental variables
+  \item Linearity and additivity violated, use log transformation -We prefer natural logs (that is, logarithms base e) because, as described above, coefficients on the natural-log scale are directly interpretable as approximate proportional differences
+  \item correlated errors or latent variables to capture violations of the independence assumption, and models for varying variances and nonnormal errors.
+  \item Using observed data to represent a larger population, Duplicate observations, Unequal variances - Weighted regression
+  \item Leverage - point furthest away from $\bar{x}$ has most leverage
+\end{itemize}
+\subsubsection{Model selection/regularization}
+L1/L2 regularization, use cross validation/valdiation set for model selection, Adjusted-$R^2$
+
+\subsection{Logistic regression}
+\subsubsection{Model assumptions}
+\subsubsection{Estimation}
+\subsubsection{Inference questions}
+\subsubsection{Model diagnosis and refinement}
+\subsubsection{Model selection/regularization}
+
+\subsection{Non-parametric models}
+\subsubsection{Model assumptions}
+\subsubsection{Estimation}
+\subsubsection{Inference questions}
+\subsubsection{Model diagnosis and refinement}
+\subsubsection{Model selection/regularization}
+
+\subsection{Models with latent components including mixed-effect/multilevel models, factor models, etc.}
+\subsubsection{Model assumptions}
+\subsubsection{Estimation}
+\subsubsection{Inference questions}
+\subsubsection{Model diagnosis and refinement}
+\subsubsection{Model selection/regularization}
+
+\section{Bayesian Data Analysis}
+Applied and computational Bayesian statistics
+\subsection{Bayesian Hierarchical Modeling}
+\subsection{Fake-data simulation to design an experiment}
+\subsection{Modeling using splines/Gaussian processes}
+\subsection{Computational workflow}
+
+\section{Statistical Machine Learning}
+\subsection{Linear and nonlinear dimensionality reduction}
+\subsection{Data-driven and model-based classification methods}
+\subsection{Data-driven and model-based clustering methods}
+\subsection{Graphical models: Bayesian networks, Markov random fields}
+\subsection{Latent variable models}
+\subsection{Introduction to Deep Learning: Deep generative models, Approximate inference}
+
+\section{Computation}
+\subsection{Gradient-based optimization methods}
+\subsection{Monte Carlo methods: sampling from univariate and multivariate distributions}
+
+% \begin{enumerate}
+%     \item {\it Open-Ended - Mathematical \& Pseudocode}.  Consider fitting logistic regression with inputs $\mathbf{x}_i \in \mathcal{R}^p$ and $y_i \in \{0,1\}$ for $i = 1, \ldots n$.
+%     \begin{itemize}
+%         \item Write out the cross-entropy loss (Bernoulli maximum likelihood estimation) problem for the logistic regression model.
+%         \item Compute the gradient of this loss with respect to the parameters.
+%         \item In pseudocode, write out a function to perform gradient descent to fit this logistic regression model.  Your function should take inputs $\mathbf{X}$, $Y$, {\tt learning rate}, and {\tt max.iterations}.
+%         \item Discussion: Is your gradient descent function a good way to fit logistic regression?  Why or why not?  If not, suggest other strategies used in machine learning to optimize this loss.
+%     \end{itemize}
+
+%     \textbf{Answer:}
+
+% $$\ell(\mathbf \beta \mid \mathbf X, \mathbf y)
+%   \;=\;
+%   -\sum_{i=1}^n \Bigl[
+%       y_i \,\log \sigma(\mathbf x_i^\top \mathbf{\beta}
+%       )
+%       \;+\;
+%       (1 - y_i)\,\log\bigl(1 - \sigma(\mathbf x_i^\top \mathbf \beta)\bigr)
+%     \Bigr] = - Y \cdot \mathbf{X}\beta + \log(1 + e^{\mathbf{X}\beta})$$
+% where $\sigma(z)=\frac{1}{1+e^{-z}} = \frac{e^z}{1 + e^z}$.
+% $$\frac{\partial \ell}{\partial \beta}
+% \;=\;
+% -\sum_{i=1}^n
+%   \Bigl[
+%     y_i - \sigma(\mathbf x_i^\top \mathbf \beta)
+%   \Bigr]\,
+%   \mathbf x_i
+% \;=\;
+% \mathbf X^\top \bigl(\sigma(\mathbf X\mathbf \beta)-Y\bigr)$$
+% where $\sigma(\mathbf X\mathbf \beta) = \bigl[\sigma(\mathbf x_1^\top\beta),\dots,\sigma(\mathbf x_n^\top \beta)\bigr]^\top$
+% \\
+
+% \begin{algorithmic}[1]
+% \Function{LogisticGD}{$\mathbf X,\, Y,\,\mathtt{learning\_rate}, \mathtt{max.iterations}$}
+%   \State Initialize $\mathbf w\gets \mathbf 0\in\mathbb R^p$
+%   \State $\mathtt{tol} \gets 1\mathtt{e}-4$
+%   \State $\mathtt{prev\_log\_likelihood} \gets - Y \cdot \mathbf{X}\beta + \log(1 + e^{\mathbf{X}\beta})$
+%   \For{$t=1$ to $\mathtt{max.iterations}$}
+%     \State $\mathbf p \gets \sigma(\mathbf X\,\mathbf w)$
+%     \State $\mathbf g \gets \mathbf X^\top(\mathbf p - Y)$
+%     \State $\mathbf w \gets \mathbf w - \mathtt{learning\_rate} \cdot\mathbf g$
+%     \State $\mathtt{curr\_log\_likelihood} \gets - Y \cdot \mathbf{X}\beta + \log(1 + e^{\mathbf{X}\beta})$
+%     \If{$\mathtt{prev\_log\_likelihood} - \mathtt{curr\_log\_likelihood} < \mathtt{tol}$}
+%         \State \textbf{break}
+%     \EndIf
+%     \State $\mathtt{prev\_log\_likelihood} \gets \mathtt{curr\_log\_likelihood}$
+%   \EndFor
+%   \State \Return $\mathbf w$
+% \EndFunction
+% \end{algorithmic}
+% While simple and easy to implement, gradient descent can be \emph{slow} to converge on large datasets:
+% \begin{itemize}
+%   \item It requires computing the gradient over all $n$ samples at each iteration.
+%   \item It can get stuck in plateaus or require very small step‐sizes (learning rates) for stability.
+% \end{itemize}
+% \quad\textit{Alternative optimization methods:}
+% \begin{itemize}
+%   \item \textbf{Newton–Raphson / IRLS}: uses second‐order information (Hessian) for quadratic convergence.
+% \end{itemize}
+
+% \item  {\it Open-ended - Conceptual}. Outliers are defined as observations that are aberrant.  (i) Which dimension reduction method(s)
+% would be best for finding outliers
+% in a data set?  Which clustering method(s)?  Why?
+% (ii) If you knew a data set might contain outliers or other aberrations, which families of supervised learning methods would you recommend that would be robust to these outliers? Why?
+
+%     \textbf{Answer:} In terms of dimension reduction methods:
+%     \begin{itemize}
+%         \item PCA - maximizes variance between points which might make it easier to visualize
+%         \item MDS - preserves distances, big distances should be preserved
+%         \item UMAP/t-SNE/LLE/Isomap - non linear dim reduction methods push far points away from each other
+%     \end{itemize}
+%     In terms of clustering methods:
+%     \begin{itemize}
+%         \item Single linkage clustering - able to find outliers in the dendrogram
+%         % \item maybe k-means with large enough k?
+%         \item spectral clustering with connected components
+%     \end{itemize}
+
+%     In terms of supervised learning methods robust to outliers:
+%     \begin{itemize}
+%         \item Gradient boosting with L1 loss, not L2
+%         \item Random forests and general ensemble based methods - handful of weak learners won't skew overall global prediction
+%     \end{itemize}
+% \item {\it Open-ended - Conceptual}. (i) List all of the types of techniques that are commonly employed in machine learning to help prevent overfitting.
+% (ii) For each technique in part (i), discuss why this technique is useful for preventing overfitting.
+% (iii) For each technique in part (i), list some machine learning models that use this technique.
+
+%     \textbf{Answer:}
+
+%     \begin{itemize}
+%         \item Regularization (L2/L1) - prevent weights from getting too big, too complex of a function, linear regression
+%         \item Dropout, bagging - lower variance predictions, NN/RF
+%         \item Early stopping - NN, stop training to prevent overfitting, avoid bad local optimal
+%         \item Data augmentation - NN, force model to learn robust decision rules, avoid bad local optimal
+%         \item Small learning rate (slow learning) - Gradient boosting, don't fit optimal all at once which hopefully prevents overfitting
+%         \item Stochastic gradients  - NNs, add noise for implicit regularization
+%     \end{itemize}
+
+% \item  {\it Open-ended - Conceptual}.  Suppose you are building a binary classifier with unequal consequences for misclassification errors (e.g. incorrectly predicting something as class +1 is much worse than incorrectly predicting something as class -1).  Recommend a way to handle this situation when using (i) logistic regression, (ii) support vector machines, (iii) random forests, or (iv) a deep neural network.
+
+%     \textbf{Answer:}
+%     \begin{itemize}
+%         \item ROC curve with all of them to decide decision threshold, but especially for logistic
+%         \item Modify slack variable to be class specific
+%         \item When fitting each tree, weight each training example. This effectively biases the impurity measure (e.g.\ Gini) to focus on the class that carries higher cost. In sklearn you can pass $sample\_weight$ per example or $class\_weight$ per class.
+%         \item Weighted cross entropy loss with all of them, especially NN
+%     \end{itemize}
+
+% \item {\it Open-ended - Conceptual}.  Consider two feedforward neural network models: Model P consists of a single hidden layer with 128 units.  Model Q consists of 2 hidden layers, the first with 128 units and the second with 8 hidden units.  Both models use identical activations.  (i) What are the comparative advantages and disadvantages of Model P verses Model Q?  (ii) Give an example where you would want to use each model.
+
+%     \textbf{Answer:} Second one is deeper, can learn more hierarchical/compositional feature, has less parameters if output dimension is small. First one has less information bottleneck (could be more prone to overfitting), could be easier to train with less issues of vanishing gradients. 1st one 50 class classification, or when you think all the features contributes to the output in a roughly additive or smooth way (house-price prediction from numeric/one-hot features, they aren't compositional). Second one regression (single dimension output), or when you're trying to learn a latent representation (non linear dimension reduction, you think your data lies on a low dimensional manifold, like MNIST).
+
+% \end{enumerate}
+
+\end{document}
