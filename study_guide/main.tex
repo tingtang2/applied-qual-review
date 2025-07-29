@@ -122,14 +122,20 @@ Thus, when $x$ is 1 standard deviation above the mean, the predicted value of $y
   \item Bayesian methods (MAP, MCMC, VI, etc.)
 \end{enumerate}
 \subsubsection{Inference questions}
-The sampling distribution of the estimates slope, intercept and residual variance, conditional on $x_1, \ldots, x_n$, are as follows: $\bar{\epsilon} = 0$ from distribution of errors,
+The sampling distribution of the estimates slope, intercept and residual variance, conditional on $x_1, \ldots, x_n$, are as follows:
 $$ \hat{\beta} = \beta + \frac{\sum_{i=1}^{n}(x_i - \bar{x})(\epsilon_i - \bar{\epsilon})}{\sum_{i=1}^{n}(x_i - \bar{x})^2} \sim \mathcal{N}\left(\beta, \frac{\sigma^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right)$$
+
+note to derive the above we use the fact that the sum of deviations from the mean is always zero, i.e. $\sum_{i=1}^{n} (x_i - \bar{x}) = 0$. \\
+
 Since $\bar{y} \perp \hat{\beta}\bar{x}$,
 $$ \hat{\alpha} = \bar{y} - \hat{\beta}\bar{x} \sim \mathcal{N}\left(\alpha, \sigma^2\left[ \frac{1}{n} + \frac{\bar{x}^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right]\right) $$
+\\
+
 Finally
 $$ \hat{\sigma}^2 \sim \sigma^2 \chi^2_{n-2}/(n-2) $$
-and note that $(\hat{\alpha}, \hat{\beta}) \perp \hat{\sigma}^2$.
-% \textbf{Proof: Distribution of Residual Variance using Idempotent Matrix $\chi^2$ Theorem}
+and note that $(\hat{\alpha}, \hat{\beta}) \perp \hat{\sigma}^2$. \\
+
+\textbf{Proof}: Distribution of Residual Variance using Idempotent Matrix $\chi^2$ Theorem \\
 Consider the linear regression model:
 \[
   Y = X\beta + \varepsilon, \quad \varepsilon \sim N_n(0, \sigma_0^2 I).
