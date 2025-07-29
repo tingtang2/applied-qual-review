@@ -43,5 +43,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: compiled # The branch the action should deploy to.
-          folder: publication/build # The folder the action should deploy.
+          folder: study_guide/build # The folder the action should deploy.
           target-folder: build # Target folder on deployment branch to push contents into.
