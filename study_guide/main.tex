@@ -80,8 +80,8 @@ $$a_i = \frac{x_i - \bar{x}}{\sum_{i=1}^{n}(x_i - \bar{x})^2} $$
 as desired.
 \subsubsection{Model assumptions}
 \begin{enumerate}
-  \item Gaussian errors - not really needed
-  \item Homoskedasdicity
+  \item Gaussian errors - not really needed, can be dropped if sample size is large
+  \item Homoskedasticity 
   \item Additive and linear relationship
   \item errors are i.i.d. - not really needed, just uncorrelated and homoskedastic errors
   \item zero mean errors
@@ -118,10 +118,11 @@ Thus, when $x$ is 1 standard deviation above the mean, the predicted value of $y
     Also note that the error variance is $$ \hat{\sigma}^2 = \frac{1}{n-2} \sum_{i}r_i^2 $$
     where $r_i := y_i - \hat{y}_i = y_i - (\hat{\alpha} - \hat{\beta}x_i)$.
   \item Gradient descent/Newton-Raphson if more params than observations or multicollinearity, can go for regularization to solve this too,
-  \item Moore-Penrose pseudo-inverse,
+  \item Moore-Penrose pseudo-inverse
   \item Bayesian methods (MAP, MCMC, VI, etc.)
 \end{enumerate}
 \subsubsection{Inference questions}
+\textbf{Sampling distributions}\\
 The sampling distribution of the estimates slope, intercept and residual variance, conditional on $x_1, \ldots, x_n$, are as follows:
 $$ \hat{\beta} = \beta + \frac{\sum_{i=1}^{n}(x_i - \bar{x})(\epsilon_i - \bar{\epsilon})}{\sum_{i=1}^{n}(x_i - \bar{x})^2} \sim \mathcal{N}\left(\beta, \frac{\sigma^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right)$$
 
@@ -148,13 +149,13 @@ The least squares estimator is:
 
 Then the residual vector is:
 \[
-  e = Y - \hat{Y} = (I - H)Y = (I - H)\varepsilon,
+  r = Y - \hat{Y} = (I - H)Y = (I - H)\varepsilon,
 \]
 because \( HX\beta = X\beta \).
 
 The residual sum of squares (RSS) is:
 \[
-  \text{RSS} = e^\top e = \varepsilon^\top (I - H)\varepsilon.
+  \text{RSS} = r^\top r = \varepsilon^\top (I - H)\varepsilon.
 \]
 
 Now apply the \textbf{idempotent matrix chi-square theorem} \href{https://www.statlect.com/probability-distributions/normal-distribution-quadratic-forms}{see link here}:
@@ -175,16 +176,53 @@ Hence,
   \hat{\sigma}^2 = \frac{1}{n - 2} \varepsilon^\top (I - H)\varepsilon \sim \frac{\sigma_0^2}{n - 2} \chi^2_{n - 2}.
 \]\\
 
-Confidence intervals on coefficients with $t$-dist,
-Compare models with $F$-test,
-Test variance with $\chi^2$-test.\\
+\textbf{Confidence intervals on coefficients with $t$-dist}\\
+Under $H_0: \beta = 0$
+\[ \frac{\hat{\beta}}{\frac{\hat{\sigma}}{\sqrt{\sum_{i=1}^{n}(x_i - \bar{x})^2}}} \sim t_{n-2} \]
+Under $H_0: \alpha = 0$
+\[ \frac{\hat{\alpha}}{\hat{\sigma}\sqrt{\left[ \frac{1}{n} + \frac{\bar{x}^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right]}} \sim t_{n-2} \]
 
-Interpret coefficients: ``Also the coefficient on sex is more interpretable as it directly represents on average, keeping  all other independent variables constant, the average increase/decrease in the tests scores of men compared to women.''
+\textbf{ANOVA (analysis of variance)}\\
+\[ \underbrace{\sum_{i=1}^{n} (y_i - \bar{y})^2}_{SST} = \underbrace{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}_{SSE} + \underbrace{\sum_{i=1}^{n} (\hat{y}_i - \bar{y})^2}_{SSR}\]
+Coefficient of determination:
+\[ R^2 = \frac{SSR}{SST} = 1 - \frac{SSE}{SST} \]
+Note for OLS $R^2 = \rho^2_{X, Y}$ \\
+\textbf{Proof:} 
+\[ \rho^2_{X, Y} =  \frac{(\sum_{i=1}^{n}(y_i - \bar{y})(x_i - \bar{x}))^2}{(\sum_{i=1}^{n} (y_i - \bar{y})^2)(\sum_{i=1}^{n} (x_i - \bar{x})^2)}\] 
+and
+\begin{align*}
+  R^2 &= \frac{SSR}{SST}\\
+  &= \frac{\sum_{i=1}^{n} (\hat{y}_i - \bar{y})^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2} \\
+  &= \frac{\sum_{i=1}^{n} (\hat{\alpha} + \hat{\beta}x_i - \bar{y})^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2} \\
+  &= \frac{\hat{\beta}^2 \sum_{i=1}^{n} (x_i - \bar{x})^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2} \\
+  &= \frac{(\sum_{i=1}^{n}(y_i - \bar{y})(x_i - \bar{x}))^2}{(\sum_{i=1}^{n} (y_i - \bar{y})^2)(\sum_{i=1}^{n} (x_i - \bar{x})^2)}
+\end{align*}
+\\
+
+\textbf{Compare models with $F$-test}\\
+Measure goodness of fit of your model. Using facts that $SSE \perp SSR$, 
+$SSE \sim \sigma^2 \chi^2_{n-2}$, $SSR \sim \sigma^2 \chi^2_{1}$ then 
+$F$-test for $H_0: \beta=0$ is 
+\[ F = \frac{SSR}{SSE/(n-2)} \sim F_{1, n-2}\] 
+Note that the $p$-value for the $F$-test and $t$-test for $\beta$ are equal in the simple linear regression case.\\
+
+\textbf{Prediction intervals}\\
+For new data $x_{\text{new}}$, our estimate $\hat{y}_{\text{new}} = \hat{\alpha} + x_{\text{new}} \hat{\beta}$
+is unbiased. The variance is 
+\begin{align*} 
+  \mathtt{Var}(\hat{y}_\text{new} | x, x_{\text{new}}) &= \mathtt{Var}(\hat{\alpha} | x)  + x_\text{new}^2 \mathtt{Var}(\hat{\beta} | x, x_{\text{new}})  + 2 x_{\text{new}} \mathtt{Cov}(\hat{\alpha}, \hat{\beta})\\
+  &= \sigma^2 \left(\frac{1}{n} + \frac{(x_\text{new} - \bar{x})^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right)
+\end{align*}
+where $\mathtt{Cov}(\hat{\alpha}, \hat{\beta}) = \frac{-\sigma^2\bar{x}}{\sum_{i=1}^{n}(x_i - \bar{x})^2}$.
+\\
+
+% \textbf{Test variance with $\chi^2$-test}\\
+\textbf{Interpret coefficients:} ``Also the coefficient on sex is more interpretable as it directly represents on average, keeping  all other independent variables constant, the average increase/decrease in the tests scores of men compared to women.''
 \subsubsection{Model diagnosis and refinement}
-\begin{itemize}
+\begin{itemize} 
   \item Autocorrelation
   \item multicollinearity - use instrumental variables
-  \item Linearity and additivity violated, use log transformation -We prefer natural logs (that is, logarithms base e) because, as described above, coefficients on the natural-log scale are directly interpretable as approximate proportional differences
+  \item Linearity and additivity violated, use log transformation - We prefer natural logs (that is, logarithms base e) because, as described above, coefficients on the natural-log scale are directly interpretable as approximate proportional differences
   \item correlated errors or latent variables to capture violations of the independence assumption, and models for varying variances and nonnormal errors.
   \item Using observed data to represent a larger population, Duplicate observations, Unequal variances - Weighted regression
   \item Leverage - point furthest away from $\bar{x}$ has most leverage
