@@ -37,7 +37,7 @@ jobs:
               pdflatex -g main.tex
             fi
             latexmk -c
-            mv main.pdf ../build
+            mv main.pdf build/
 
       - name: Push compiled documents to separate branch
         uses: JamesIves/github-pages-deploy-action@v4
