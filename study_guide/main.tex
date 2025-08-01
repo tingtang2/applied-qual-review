@@ -81,7 +81,7 @@ as desired.
 \subsubsection{Model assumptions}
 \begin{enumerate}
   \item Gaussian errors - not really needed, can be dropped if sample size is large
-  \item Homoskedasticity 
+  \item Homoskedasticity
   \item Additive and linear relationship
   \item errors are i.i.d. - not really needed, just uncorrelated and homoskedastic errors
   \item zero mean errors
@@ -187,8 +187,8 @@ Under $H_0: \alpha = 0$
 Coefficient of determination:
 \[ R^2 = \frac{SSR}{SST} = 1 - \frac{SSE}{SST} \]
 Note for OLS $R^2 = \rho^2_{X, Y}$ \\
-\textbf{Proof:} 
-\[ \rho^2_{X, Y} =  \frac{(\sum_{i=1}^{n}(y_i - \bar{y})(x_i - \bar{x}))^2}{(\sum_{i=1}^{n} (y_i - \bar{y})^2)(\sum_{i=1}^{n} (x_i - \bar{x})^2)}\] 
+\textbf{Proof:}
+\[ \rho^2_{X, Y} =  \frac{(\sum_{i=1}^{n}(y_i - \bar{y})(x_i - \bar{x}))^2}{(\sum_{i=1}^{n} (y_i - \bar{y})^2)(\sum_{i=1}^{n} (x_i - \bar{x})^2)}\]
 and
 \begin{align*}
   R^2 &= \frac{SSR}{SST}\\
@@ -200,26 +200,46 @@ and
 \\
 
 \textbf{Compare models with $F$-test}\\
-Measure goodness of fit of your model. Using facts that $SSE \perp SSR$, 
-$SSE \sim \sigma^2 \chi^2_{n-2}$, $SSR \sim \sigma^2 \chi^2_{1}$ then 
-$F$-test for $H_0: \beta=0$ is 
-\[ F = \frac{SSR}{SSE/(n-2)} \sim F_{1, n-2}\] 
+Measure goodness of fit of your model. Using facts that $SSE \perp SSR$,
+$SSE \sim \sigma^2 \chi^2_{n-2}$, $SSR \sim \sigma^2 \chi^2_{1}$ then
+$F$-test for $H_0: \beta=0$ is
+\[ F = \frac{SSR}{SSE/(n-2)} \sim F_{1, n-2}\]
 Note that the $p$-value for the $F$-test and $t$-test for $\beta$ are equal in the simple linear regression case.\\
 
 \textbf{Prediction intervals}\\
 For new data $x_{\text{new}}$, our estimate $\hat{y}_{\text{new}} = \hat{\alpha} + x_{\text{new}} \hat{\beta}$
-is unbiased. The variance is 
-\begin{align*} 
+is unbiased. The variance is
+\begin{align*}
   \mathtt{Var}(\hat{y}_\text{new} | x, x_{\text{new}}) &= \mathtt{Var}(\hat{\alpha} | x)  + x_\text{new}^2 \mathtt{Var}(\hat{\beta} | x, x_{\text{new}})  + 2 x_{\text{new}} \mathtt{Cov}(\hat{\alpha}, \hat{\beta})\\
   &= \sigma^2 \left(\frac{1}{n} + \frac{(x_\text{new} - \bar{x})^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right)
 \end{align*}
-where $\mathtt{Cov}(\hat{\alpha}, \hat{\beta}) = \frac{-\sigma^2\bar{x}}{\sum_{i=1}^{n}(x_i - \bar{x})^2}$.
-\\
+where $\mathtt{Cov}(\hat{\alpha}, \hat{\beta}) = \frac{-\sigma^2\bar{x}}{\sum_{i=1}^{n}(x_i - \bar{x})^2}$. For proof of this
+consider the following:
+
+\begin{align*}
+  \mathtt{Cov}(\hat{\alpha}, \hat{\beta}) &= \mathtt{Cov}(\bar{y} - \hat{\beta}\bar{x}, \hat{\beta})\\
+  &= \mathtt{Cov}(\bar{y}, \hat{\beta}) -  \mathtt{Cov}(\hat{\beta} \bar{x}, \hat{\beta})\\
+  &= \mathtt{Cov}\left(\frac{1}{n} \sum_{i=1}^{n} y_i, \frac{\sum_{i=1}^{n}y_i (x_i - \bar{x})}{\sum_{j=1}^{n} (x_j - \bar{x})^2} \right) -  \bar{x} \mathtt{Var}(\hat{\beta}) \\
+  &= \frac{\sum_{i=1}^{n}\sigma^2 (x_i - \bar{x})}{n\sum_{j=1}^{n} (x_j - \bar{x})^2} -  \frac{\sigma^2 \bar{x}}{\sum_{j=1}^{n} (x_j - \bar{x})^2} \ \ \ \text{(See Lemma 11.3.2. from Casella and Berger)} \\
+  &= 0 -  \frac{\sigma^2 \bar{x}}{\sum_{j=1}^{n} (x_j - \bar{x})^2}
+\end{align*}
+
+Hence
+\[ \hat{y}_\text{new} \sim \mathcal{N}\left(\alpha + x_\text{new} \cdot \beta, \sigma^2 \left( \frac{1}{n} + \frac{(x_\text{new} - \bar{x})^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right)\right) \]
+and it follows that a CI to use would be
+\[\hat{\alpha} + x_\text{new} \cdot \hat{\beta} \pm t_{n-2, 1 - \alpha/2} \cdot \hat{\sigma} \sqrt{\frac{1}{n} + \frac{(x_\text{new} - \bar{x})^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}}\]
+However we're typically interested in an interval for the actual observations rather than on the mean. Hence
+\begin{align*}
+  \mathtt{Var}(y_\text{new} - \hat{y}_\text{new}) &= \mathtt{Var}(y_\text{new}) + \mathtt{Var}(\hat{y}_\text{new}) \\
+  &= \sigma^2 \left( 1+ \frac{1}{n} + \frac{(x_\text{new} - \bar{x})^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right)
+\end{align*}
+hence the CI we do use is
+\[\hat{\alpha} + x_\text{new} \cdot \hat{\beta} \pm t_{n-2, 1 - \alpha/2} \cdot \hat{\sigma} \sqrt{1 + \frac{1}{n} + \frac{(x_\text{new} - \bar{x})^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}}\]
 
 % \textbf{Test variance with $\chi^2$-test}\\
 \textbf{Interpret coefficients:} ``Also the coefficient on sex is more interpretable as it directly represents on average, keeping  all other independent variables constant, the average increase/decrease in the tests scores of men compared to women.''
 \subsubsection{Model diagnosis and refinement}
-\begin{itemize} 
+\begin{itemize}
   \item Autocorrelation
   \item multicollinearity - use instrumental variables
   \item Linearity and additivity violated, use log transformation - We prefer natural logs (that is, logarithms base e) because, as described above, coefficients on the natural-log scale are directly interpretable as approximate proportional differences
