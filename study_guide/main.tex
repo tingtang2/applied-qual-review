@@ -206,6 +206,8 @@ $F$-test for $H_0: \beta=0$ is
 \[ F = \frac{SSR}{SSE/(n-2)} \sim F_{1, n-2}\]
 Note that the $p$-value for the $F$-test and $t$-test for $\beta$ are equal in the simple linear regression case.\\
 
+% \textbf{Test variance with $\chi^2$-test}\\
+
 \textbf{Prediction intervals}\\
 For new data $x_{\text{new}}$, our estimate $\hat{y}_{\text{new}} = \hat{\alpha} + x_{\text{new}} \hat{\beta}$
 is unbiased. The variance is
@@ -236,7 +238,55 @@ However we're typically interested in an interval for the actual observations ra
 hence the CI we do use is
 \[\hat{\alpha} + x_\text{new} \cdot \hat{\beta} \pm t_{n-2, 1 - \alpha/2} \cdot \hat{\sigma} \sqrt{1 + \frac{1}{n} + \frac{(x_\text{new} - \bar{x})^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}}\]
 
-% \textbf{Test variance with $\chi^2$-test}\\
+\textbf{Relaxing assumptions and their impacts on CIs:}
+\begin{enumerate}
+  \item Normality
+    \begin{itemize}
+      \item Check with Q-Q plot of residuals
+      \item Can be dropped with large sample sizes as by (Lindeberg-Feller) CLT note that
+        \[\hat{\beta} \xrightarrow{d} \mathcal{N}\left(\beta, \frac{\sigma^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right) \]
+        and
+        \[\hat{\alpha} \xrightarrow{d} \mathcal{N}\left(\alpha, \sigma^2 \left(\frac{1}{n} + \frac{\bar{x}^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2} \right) \right) \]
+        However in this regime $\hat{\alpha}$ and $\hat{\beta}$ are \textbf{\textit{not independent}} of $\hat{\sigma}^2$ and hence we must use Slutsky's to justify
+        using normal quantiles in our confidence intervals (the side effect here is also that the use of  $t$-distribution quantiles no longer become valid).
+    \end{itemize}
+  \item Linearity
+    \begin{itemize}
+      \item Check with residual vs. fitted value plots
+      \item When there is nonlinearity and $\alpha + \beta X$ are still the best linear approximation, then point estimates and standard errors are still valid but the interpretations are different (this is just the best linear approximation).
+        Consider \[\mathbb{E}[Y|X] = \alpha + \beta X + \delta(X)\]
+        If $\alpha + \beta X$ is the best linear approximation then (assuming $X$ is random)
+        \[\mathbb{E}[\delta(X)] = \mathbb{E}[X \delta(X)] = 0\]
+        ($\alpha$ is best intercept and $\beta$ is the best linear term). In which case we still have
+        \[\hat{\beta} \xrightarrow{d} \mathcal{N}\left(\beta, \frac{\sigma^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right) \]
+        and
+        \[\hat{\alpha} \xrightarrow{d} \mathcal{N}\left(\alpha, \sigma^2 \left(\frac{1}{n} + \frac{\bar{x}^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2} \right) \right) \]
+        where $\sigma^2 = \sigma^2_0 + \mathbb{E}[\delta(X)^2]$
+        Finally, note that
+        \[\hat{\sigma}^2 \xrightarrow{p} \sigma^2 = \sigma^2_0 + \mathbb{E}[\delta(X)^2] > \sigma^2_0\]
+    \end{itemize}
+  \item Homoskedasticity
+    \begin{itemize}
+      \item Check with residual vs. fitted value plots
+      \item If we drop this, our point estimates remain valid, but the standard errors and inferences need to be adjusted.
+        Consider $\mathtt{Var}(\varepsilon_i) = \sigma^2_i$, then
+        \[ \mathtt{Var}(\hat{\beta}) = \frac{\sum_{i=1}^{n}\sigma^2_i (x_i - \bar{x})^2}{(\sum_{j=1}^{n}(x_j - \bar{x})^2)^2} \]
+        Since we can't directly estimate $\sigma^2_i$, we use the following, justified by Slutsky's
+        \[  \widehat{\mathtt{Var}(\hat{\beta})} := \frac{\sum_{i=1}^{n} r_i^2 (x_i - \bar{x})^2 }{(\sum_{j=1}^{n}(x_j - \bar{x})^2)^2} \xrightarrow{p} \mathtt{Var}(\hat{\beta})\]
+    \end{itemize}
+  \item Independence of residuals
+    \begin{itemize}
+      \item Check with residual vs. fitted value plots
+      \item When $\mathtt{Cov}(\varepsilon_i, \varepsilon_j) = \sigma_{ij}$, then
+        \[ \mathtt{Var}(\hat{\beta}) = \frac{\sum_{i, j}\sigma_{ij}(x_i - \bar{x})(x_j - \bar{x})}{(\sum_i (x_i - \bar{x})^2)^2}\]
+        The CLT still holds under weak dependence (triangular CLT).
+        \[\hat{\beta} \xrightarrow{d} \mathcal{N}\left(\beta, \frac{\sigma^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2}\right) \]
+        and
+        \[\hat{\alpha} \xrightarrow{d} \mathcal{N}\left(\alpha, \sigma^2 \left(\frac{1}{n} + \frac{\bar{x}^2}{\sum_{i=1}^{n}(x_i - \bar{x})^2} \right) \right) \]
+        Point estimates are still valid, standard errors may be valid.
+    \end{itemize}
+\end{enumerate}
+
 \textbf{Interpret coefficients:} ``Also the coefficient on sex is more interpretable as it directly represents on average, keeping  all other independent variables constant, the average increase/decrease in the tests scores of men compared to women.''
 \subsubsection{Model diagnosis and refinement}
 \begin{itemize}
