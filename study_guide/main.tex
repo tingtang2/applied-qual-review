@@ -6,6 +6,7 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{xcolor}
+\usepackage{enumitem}
 \newcommand{\argmin}{\text{argmin}}
 \newcommand{\argmax}{\text{argmax}}
 \newcommand{\veps}{\varepsilon}
@@ -299,6 +300,33 @@ hence the CI we do use is
 \end{itemize}
 \subsubsection{Model selection/regularization}
 L1/L2 regularization, use cross validation/valdiation set for model selection, Adjusted-$R^2$
+\subsubsection{Notes from past problems}
+\begin{itemize}
+  \item Applied Qual 2024 Problem 2
+    \begin{enumerate}[label=(\alph*)]
+      \item Fitting a single regression line with a binary predictor between two groups and interaction term with the continuous predictor
+        is equivalent to fitting two separate regression lines to the two groups since the degrees of freedom are the same and we assume noise is independent
+        so fitting of one line will not affect the other.
+      \item
+        \begin{align*}
+          \hat{\beta} &= \frac{\mathtt{cov}(x, y)}{\mathtt{var}(x)} = \rho_{x, y} \cdot \frac{s_y}{s_x}\\
+          \hat{\alpha} &= \bar{y} - \hat{\beta} \bar{x}
+        \end{align*}
+      \item Simpson's paradox
+      \item Empirical bootstrap procedure
+        \begin{enumerate}[label=(\roman*)]
+          \item Sample with replacement from data $n$ times
+          \item Fit regression model to sampled data
+          \item Repeat step i and ii $B$ times to get $\hat{\beta}_2^{(1)}, \ldots, \hat{\beta}_2^{(B)}$
+          \item By asymptotic theory, we know that there exist $\sigma_j$ for $j \in [3]$, such that
+            \[ \sqrt{n} (\hat{\beta}_j - \beta_j) \xrightarrow{d} \mathcal{N}(0, \sigma^2_j)\]
+            Hence we can construct approximate C.I.s of the form
+            \[ \hat{\beta}_j \pm z_{1 - \alpha/2} \cdot \sqrt{\widehat{\mathtt{Var}_B(\hat{\beta_j})}} \]
+            where we estimate $\widehat{\mathtt{Var}_B(\hat{\beta_j})} = \frac{1}{B} \sum_{i=1}^{B} \left(\hat{\beta_j}^{(i)} - \frac{1}{B} \sum_{k=1}^{B}\hat{\beta}_j^{(k)}\right)^2$ from the bootstrap samples.
+        \end{enumerate}
+      \item Generally $\rho_{x, y} < 1$ (noise with non-zero variance), hence flipping will not yield same estimate.
+    \end{enumerate}
+\end{itemize}
 
 \subsection{Logistic regression}
 \subsubsection{Model assumptions}
