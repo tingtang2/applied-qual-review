@@ -7,6 +7,7 @@
 \usepackage{algpseudocode}
 \usepackage{xcolor}
 \usepackage{enumitem}
+\usepackage{bbm}
 \newcommand{\argmin}{\text{argmin}}
 \newcommand{\argmax}{\text{argmax}}
 \newcommand{\veps}{\varepsilon}
@@ -199,6 +200,7 @@ and
   &= \frac{(\sum_{i=1}^{n}(y_i - \bar{y})(x_i - \bar{x}))^2}{(\sum_{i=1}^{n} (y_i - \bar{y})^2)(\sum_{i=1}^{n} (x_i - \bar{x})^2)}
 \end{align*}
 \\
+Residual standard error (RSE): \[ RSE = \sqrt{\frac{SSR}{n - p - 1}} \]
 
 \textbf{Compare models with $F$-test}\\
 Measure goodness of fit of your model. Using facts that $SSE \perp SSR$,
@@ -326,6 +328,57 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
         \end{enumerate}
       \item Generally $\rho_{x, y} < 1$ (noise with non-zero variance), hence flipping will not yield same estimate.
     \end{enumerate}
+  \item Applied Qual 2022 Problem A
+    \begin{enumerate}[label=(\alph*)]
+      \item Ablate rounding to nearest 3 months and no rounding. Then can compare following models:
+        \begin{itemize}
+          \item Standard OLS - issues include heteroskedastic noise (heights will vary more with age), fact that ages can't be less than 0, and would expect growth spurts so additive linear assumption is not correct.
+            \[ y_i | x_i \sim \text{Normal}(\alpha + \beta x_i, \sigma^2) \]
+          \item Log transformation of $y$'s (heights) remedies the second two issues from above a bit.
+            \[ y_i | x_i \sim \text{LogNormal}(\alpha + \beta x_i, \sigma^2) \]
+          \item Another approach could be to use a latent variable/hierarchical model, where we model the latent true age $t_i$ using a categorical latent variable $\delta_i$.
+            \[ y_i | t_i \sim \text{LogNormal}(\alpha + \beta t_i, \sigma^2) \]
+            \[ \delta_i \sim \text{Categorical}(\pi_1, \pi_2, \pi_3) \]
+            Where $\pi_j$ for $j \in [3]$ corresponds to the probability that $\delta_i = j$ and
+            \[\delta_i =
+              \begin{cases}
+                1 \ \ \ \text{if age is exact. Hence $t_i = x_i$.} \\
+                2 \ \ \ \text{if age is rounded to nearest 6 months. Hence $t_i \in [x_i - 3, x_i + 3)$.} \\
+                3 \ \ \ \text{if age is rounded to nearest 12 months. Hence $t_i \in [x_i - 6, x_i + 6)$.}
+            \end{cases}\]
+            For a prior on $t_i$, we assume that \[t_i \sim \text{Uniform}(0, 60)\]
+            Hence the (global) parameters that we need to estimate are $\theta = \{\alpha, \beta,  \pi_1, \pi_2, \pi_3, \sigma^2 \}$.
+        \end{itemize}
+      \item Using second model, likelihood is just product of LogNormal pdfs
+        \begin{align*}
+          \mathcal{L}(\alpha, \beta, \sigma^2 | \{ x_i\}_{i=1}^{n},  \{ y_i\}_{i=1}^{n}) & = \prod_{i=1}^n \frac{1}{x_i\sqrt{2 \pi \sigma^2}} \exp\left( \frac{1}{2 \sigma^2} (\log y_i - \alpha - \beta x_i)^2 \right) \\
+          &= (2 \pi \sigma^2)^{-n/2} \exp\left( \sum_{i=1}^{n} \frac{1}{2 \sigma^2} (\log y_i - \alpha - \beta x_i)^2 - \log y_i \right)
+        \end{align*}
+        Using the third model, the likelihood is
+        \begin{align*}
+        \mathcal{L}(\theta | \{ x_i\}_{i=1}^{n},  \{ y_i\}_{i=1}^{n})) &= \prod_{i=1}^{n} p(y_i, x_i | \theta) \\
+        &= \prod_{i=1}^{n} \sum_{j=1}^{3} \int_{0}^{60} p(y_i, x_i, t_i, \delta_i = j|\theta) dt \\
+        &= \prod_{i=1}^{n} \sum_{j=1}^{3} \int_{0}^{60} p(y_i,| t_i, \theta) p(x_i, | \delta_i = j, t_i, \theta)  p(\delta_i = j | \theta) p(t_i | \theta)dt \\
+        &= \prod_{i=1}^{n} \sum_{j=1}^{3} \int_{0}^{60} \text{LogNormal}(\alpha + \beta t_i) \cdot \mathbbm{1}(\delta_{ij}(x_i)) \cdot  \pi_j \cdot \frac{1}{60} dt\\
+        &= \prod_{i=1}^{n} \frac{1}{60}\Bigg( \int_{0}^{60} \text{LogNormal}(\alpha + \beta t_i) \cdot \mathbbm{1}(t_i = x_i) \cdot  \pi_1 dt \\
+          &+ \int_{0}^{60} \text{LogNormal}(\alpha + \beta t_i) \cdot \mathbbm{1}(t_i \in [x_i - 3, x_i + 3)) \cdot  \pi_2 dt \\
+        &+ \int_{0}^{60} \text{LogNormal}(\alpha + \beta t_i) \cdot \mathbbm{1}(t_i \in [x_i - 6, x_i + 6)) \cdot  \pi_3 dt \Bigg)  \\
+        &= \prod_{i=1}^{n} \frac{1}{60}\Bigg(\text{LogNormal}(\alpha + \beta t_i)\cdot  \pi_1 dt + \int_{x_i - 3}^{x_i + 3} \text{LogNormal}(\alpha + \beta t_i) \cdot \pi_2 dt \\
+        &+ \int_{x_i - 6}^{x_i + 6} \text{LogNormal}(\alpha + \beta t_i) \cdot  \pi_3 dt \Bigg)
+      \end{align*}
+      Note in the second line we marginalize over the (local) latent variables $t_i, \delta_i$.
+    \item Using second model, do MLE directly. Note the MLEs for LogNormal regression is equivalent to the MLEs for OLS, except with the $y_i$'s replaced with $\log y_i$'s.
+      Hence
+      \begin{align*}
+        \hat{\beta} &= \frac{\mathtt{Cov}(x, \log y)}{\mathtt{Var}(x)} \\
+        \hat{\alpha} &= \bar{\log y} - \hat{\beta} \bar{x} \\
+        \widehat{\sigma^2} &= \frac{1}{n}\sum_{i=1}^{n}(\log y_i - (\alpha + \beta x_i))^2
+      \end{align*}
+      Could do gradient descent as well if there are numerical issues. To do inference you could look at the predictive distribution of $\log y_i$ and invert it to get a point estimate of
+      the true age. Then you could do a ``Wild'' or residual bootstrap (\href{https://faculty.washington.edu/yenchic/17Sp_403/Lec6-bootstrap_reg.pdf}{ref}) to get a distribution on the true age given a specific height maybe? (probably not right).\\
+
+      Using the third model, we could do EM/MCMC/VI, for simplicity we'll just describe an EM algorithm for this model.
+  \end{enumerate}
 \end{itemize}
 
 \subsection{Logistic regression}
