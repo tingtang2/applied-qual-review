@@ -438,7 +438,7 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
       \textbf{M step:} Maximize expected value of the complete data log likelihood to estimate global parameters $\theta$, analogous to MLE.
       Update $\pi_k$ by taking average responsibility over data. Update $\alpha, \beta, \sigma^2$ by doing a weighted least squares regression, where $t_i$ is a distribution and we use the responsibility weights calculated in the E step.
       To do inference on the true age of a child, we calculate
-      \[p(t_i| \mathbf{x}, \mathbf{y}, \hat{\theta}) = \sum_{k=1}^{3} p(t_i, \delta=k| \mathbf{x}, \mathbf{y}, \hat{\theta}) p(\delta=k| \mathbf{x}, \mathbf{y}, \hat{\theta})  \]
+      \[p(t_i| \mathbf{x}, \mathbf{y}, \hat{\theta}) = \sum_{k=1}^{3} p(t_i| \delta=k, \mathbf{x}, \mathbf{y}, \hat{\theta}) p(\delta=k| \mathbf{x}, \mathbf{y}, \hat{\theta})  \]
       From this probability distribution we can calculate a point estimate and look at the quantiles if it is a nice distribution or else do an empirical bootstrap.
   \end{enumerate}
 
