@@ -421,13 +421,27 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
           \end{align*}
         \item
           \begin{align*}
-            \mathbb{E}_{\mathbf{t}, \mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)}}[t_i] =
+            \mathbb{E}_{\mathbf{t}, \mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)}}[t_i] &= \sum_{k=1}^{3}\int \mathbf{t} \cdot p(\mathbf{t}, \delta = k| \mathbf{x}, \mathbf{y}, \theta^{(0)}) d\mathbf{t}\\
+            &= \sum_{k=1}^{3}\int \mathbf{t} \cdot p(\mathbf{t}| \delta = k, \mathbf{x}, \mathbf{y}, \theta^{(0)}) p(\delta = k | \mathbf{x}, \mathbf{y}, \theta^{(0)}) d\mathbf{t}
           \end{align*}
-        \item $\mathbb{E}_{\mathbf{t}, \mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)}}[t_i^2] =$
+          where again by Bayes rule
+          \begin{align*}
+            p(\mathbf{t}| \delta = k, \mathbf{x}, \mathbf{y}, \theta^{(0)}) &= \frac{p(\delta = k, \mathbf{x}, \mathbf{y}, \mathbf{t} | \theta^{(0)})}{p(\delta = k, \mathbf{x}, \mathbf{y} | \theta^{(0)})} \\
+            &= \frac{p(\delta = k | \theta^{(0)}) p( \mathbf{x}, \mathbf{y}, \mathbf{t} | \delta = k, \theta^{(0)})}{p(\delta = k| \theta^{(0)}) p( \mathbf{x}, \mathbf{y} | \delta=k, \theta^{(0)})} \\
+            &= \frac{\text{LogNormal}(\alpha + \beta t_i) \cdot \mathbbm{1}(\delta_{ik}(x_i))\cdot \frac{1}{60}}{\int_{0}^{60} p( \mathbf{x} | \mathbf{t}, \delta_i = k,  \theta^{(0)}) p( \mathbf{y} | \mathbf{t}, \delta_i = k,  \theta^{(0)}) p( \mathbf{t})  d\mathbf{t}}
+          \end{align*}
+          where hence we have already described how to calculate all of the above quantities.
+        \item Likewise
+          $$\mathbb{E}_{\mathbf{t}, \mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)}}[t_i^2] = \sum_{k=1}^{3}\int \mathbf{t}^2 \cdot p(\mathbf{t}| \delta = k, \mathbf{x}, \mathbf{y}, \theta^{(0)}) p(\delta = k | \mathbf{x}, \mathbf{y}, \theta^{(0)})d\mathbf{t} $$
       \end{enumerate}
 
       \textbf{M step:} Maximize expected value of the complete data log likelihood to estimate global parameters $\theta$, analogous to MLE.
+      Update $\pi_k$ by taking average responsibility over data. Update $\alpha, \beta, \sigma^2$ by doing a weighted least squares regression, where $t_i$ is a distribution and we use the responsibility weights calculated in the E step.
+      To do inference on the true age of a child, we calculate
+      \[p(t_i| \mathbf{x}, \mathbf{y}, \hat{\theta}) = \sum_{k=1}^{3} p(t_i, \delta=k| \mathbf{x}, \mathbf{y}, \hat{\theta}) p(\delta=k| \mathbf{x}, \mathbf{y}, \hat{\theta})  \]
+      From this probability distribution we can calculate a point estimate and look at the quantiles if it is a nice distribution or else do an empirical bootstrap.
   \end{enumerate}
+
 \end{itemize}
 
 \subsection{Logistic regression}
