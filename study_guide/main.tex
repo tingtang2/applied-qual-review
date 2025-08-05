@@ -363,7 +363,7 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
         &= \prod_{i=1}^{n} \frac{1}{60}\Bigg( \int_{0}^{60} \text{LogNormal}(\alpha + \beta t_i) \cdot \mathbbm{1}(t_i = x_i) \cdot  \pi_1 dt \\
           &+ \int_{0}^{60} \text{LogNormal}(\alpha + \beta t_i) \cdot \mathbbm{1}(t_i \in [x_i - 3, x_i + 3)) \cdot  \pi_2 dt \\
         &+ \int_{0}^{60} \text{LogNormal}(\alpha + \beta t_i) \cdot \mathbbm{1}(t_i \in [x_i - 6, x_i + 6)) \cdot  \pi_3 dt \Bigg)  \\
-        &= \prod_{i=1}^{n} \frac{1}{60}\Bigg(\text{LogNormal}(\alpha + \beta t_i)\cdot  \pi_1 dt + \int_{x_i - 3}^{x_i + 3} \text{LogNormal}(\alpha + \beta t_i) \cdot \pi_2 dt \\
+        &= \prod_{i=1}^{n} \frac{1}{60}\Bigg(\text{LogNormal}(\alpha + \beta x_i)\cdot  \pi_1 + \int_{x_i - 3}^{x_i + 3} \text{LogNormal}(\alpha + \beta t_i) \cdot \pi_2 dt \\
         &+ \int_{x_i - 6}^{x_i + 6} \text{LogNormal}(\alpha + \beta t_i) \cdot  \pi_3 dt \Bigg)
       \end{align*}
       Note in the second line we marginalize over the (local) latent variables $t_i, \delta_i$.
@@ -377,7 +377,56 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
       Could do gradient descent as well if there are numerical issues. To do inference you could look at the predictive distribution of $\log y_i$ and invert it to get a point estimate of
       the true age. Then you could do a ``Wild'' or residual bootstrap (\href{https://faculty.washington.edu/yenchic/17Sp_403/Lec6-bootstrap_reg.pdf}{ref}) to get a distribution on the true age given a specific height maybe? (probably not right).\\
 
-      Using the third model, we could do EM/MCMC/VI, for simplicity we'll just describe an EM algorithm for this model.
+      Using the third model, you could theoretically directly maximize the log of the above observed data log likelihood via MLE. However notice that we would then have a log of a sum in addition to having to differentiate under the integral. The resulting
+      expression is highly likely to run into numerical issues if you try to use it with a gradient descent type algorithm.
+      As an alternative, we could do EM/MCMC/VI, for simplicity we'll just describe an EM algorithm for this model.\\
+
+      \textbf{E step:} Compute expectations/responsibilities of latent variables using complete data log likelihood (likelihood of global parameters assuming you have observations for local latent variables). Also can be seen as estimating the posterior of the local latent variables (MAP estimate). Here the complete data log likelihood is
+      \begin{align*}
+        \log \mathcal{L}_C (\theta | \{ x_i\}_{i=1}^{n},  \{ y_i\}_{i=1}^{n}, \{ t_i\}_{i=1}^{n}, \{ \delta_i\}_{i=1}^{n}) &= \sum_{i=1}^{n} \log p(y_i, x_i, t_i, \delta_i | \theta) \\
+        &= \sum_{i=1}^{n} \log p(y_i | t_i, \theta) + \log p(x_i | t_i, \delta_i, \theta) + \log p(t_i) + \log p(\delta_i | \theta)\\
+        &\propto \sum_{i=1}^{n} \left(-\frac{1}{2} \log \sigma^2 + \frac{1}{2 \sigma^2} (\log y_i - \alpha - \beta t_i)^2 + \sum_{j=1}^{3}\mathbbm{1}(\delta_i = j)\log \pi_j \right)
+      \end{align*}
+      where we drop terms that do not depend on $\theta$ (i.e. $\log p(x_i | t_i, \delta_i, \theta)$ and $\log p(t_i)$).
+      Then for the E step, given an initial guess for $\theta^{(0)}$, we compute
+      \begin{align*}
+        \mathbb{E}_{\mathbf{t}, \mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)}}[\log \mathcal{L}_C (\theta | \phi)] &\propto \mathbb{E}_{\mathbf{t}, \mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)}}\left[\sum_{i=1}^{n} \left(-\frac{1}{2} \log \sigma^2 + \frac{1}{2 \sigma^2} (\log y_i - \alpha - \beta t_i)^2 + \sum_{j=1}^{3}\mathbbm{1}(\delta_i = j)\log \pi_j \right)\right]
+      \end{align*}
+      where we use $\phi$ as a shorthand for the complete data ($\{ x_i\}_{i=1}^{n},  \{ y_i\}_{i=1}^{n}, \{ t_i\}_{i=1}^{n}, \{ \delta_i\}_{i=1}^{n}$). Inspecting the above expression,
+      we notice we need to compute three expressions:
+      \begin{enumerate}[label=(\arabic*)]
+        \item
+          \begin{align*}
+            \mathbb{E}_{\mathbf{t}, \mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)}}[\mathbbm{1}(\delta_i = j)] &= \sum_{\delta=1}^{3} \int \mathbbm{1}(\delta_i = j) p(\mathbf{t}, \mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)}) d\mathbf{t}  \\
+            &= \sum_{\delta=1}^{3} \int \mathbbm{1}(\delta_i = j) p(\mathbf{t}  | \mathbf{\delta}, \mathbf{x}, \mathbf{y}, \theta^{(0)}) p(\mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)})d\mathbf{t} \\
+            &= p(\delta_i = j | \mathbf{x}, \mathbf{y}, \theta^{(0)}) \int  p(\mathbf{t}  | \mathbf{\delta}, \mathbf{x}, \mathbf{y}, \theta^{(0)}) d\mathbf{t}\\
+            &= p(\delta_i = j | \mathbf{x}, \mathbf{y}, \theta^{(0)})
+          \end{align*}
+          where above we use the chain rule. To actually compute this posterior probability, we appeal to Bayes rule:
+          \begin{align*}
+            p(\delta_i = j | \mathbf{x}, \mathbf{y}, \theta^{(0)}) &= \frac{p(\delta_i = j,  \mathbf{x}, \mathbf{y} | \theta^{(0)})}{p(\mathbf{x}, \mathbf{y} | \theta^{(0)})} \\
+            &= \frac{p( \mathbf{x}, \mathbf{y} |\delta_i = j,  \theta^{(0)}) p(\delta_i = j | \theta^{(0)})}{\sum_{k=1}^{3}p(\mathbf{x}, \mathbf{y}, \delta_i = k | \theta^{(0)})} \\
+            &= \frac{p( \mathbf{x}, \mathbf{y} |\delta_i = j,  \theta^{(0)}) \pi_j}{\sum_{k=1}^{3}p(\mathbf{x}, \mathbf{y}| \delta_i = k, \theta^{(0)}) \pi_k}
+          \end{align*}
+          where as above in the likelihood part
+          \begin{align*}
+            p( \mathbf{x}, \mathbf{y} |\delta_i = 1,  \theta^{(0)}) &= \int_{0}^{60} p( \mathbf{x}, \mathbf{y}, \mathbf{t} |\delta_i = 1,  \theta^{(0)}) d\mathbf{t} = \int_{0}^{60} p( \mathbf{x} | \mathbf{t}, \delta_i = 1,  \theta^{(0)}) p( \mathbf{y} | \mathbf{t}, \delta_i = 1,  \theta^{(0)}) p( \mathbf{t})  d\mathbf{t} \\
+            &=  \text{LogNormal}(\alpha + \beta x_i) \cdot \frac{1}{60} \\
+            \\
+            p( \mathbf{x}, \mathbf{y} |\delta_i = 2,  \theta^{(0)}) &= \int_{0}^{60} p( \mathbf{x}, \mathbf{y}, \mathbf{t} |\delta_i = 1,  \theta^{(0)}) d\mathbf{t} = \int_{0}^{60} p( \mathbf{x} | \mathbf{t}, \delta_i = 1,  \theta^{(0)}) p( \mathbf{y} | \mathbf{t}, \delta_i = 1,  \theta^{(0)}) p( \mathbf{t})  d\mathbf{t} \\
+            &=  \int_{\mathbf{x} - 3}^{\mathbf{x} + 3}\text{LogNormal}(\alpha + \beta \mathbf{t}) \cdot \frac{1}{60} d\mathbf{t} \\
+            \\
+            p( \mathbf{x}, \mathbf{y} |\delta_i = 3,  \theta^{(0)}) &= \int_{0}^{60} p( \mathbf{x}, \mathbf{y}, \mathbf{t} |\delta_i = 1,  \theta^{(0)}) d\mathbf{t} = \int_{0}^{60} p( \mathbf{x} | \mathbf{t}, \delta_i = 1,  \theta^{(0)}) p( \mathbf{y} | \mathbf{t}, \delta_i = 1,  \theta^{(0)}) p( \mathbf{t})  d\mathbf{t} \\
+            &=  \int_{\mathbf{x} - 6}^{\mathbf{x} + 6}\text{LogNormal}(\alpha + \beta \mathbf{t}) \cdot \frac{1}{60} d\mathbf{t} \\
+          \end{align*}
+        \item
+          \begin{align*}
+            \mathbb{E}_{\mathbf{t}, \mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)}}[t_i] =
+          \end{align*}
+        \item $\mathbb{E}_{\mathbf{t}, \mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)}}[t_i^2] =$
+      \end{enumerate}
+
+      \textbf{M step:} Maximize expected value of the complete data log likelihood to estimate global parameters $\theta$, analogous to MLE.
   \end{enumerate}
 \end{itemize}
 
