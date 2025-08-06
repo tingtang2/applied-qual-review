@@ -445,6 +445,19 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
       To do inference on the true age of a child, we calculate
       \[p(t_i| \mathbf{x}, \mathbf{y}, \hat{\theta}) = \sum_{k=1}^{3} p(t_i| \delta=k, \mathbf{x}, \mathbf{y}, \hat{\theta}) p(\delta=k| \mathbf{x}, \mathbf{y}, \hat{\theta})  \]
       From this probability distribution we can calculate a point estimate and look at the quantiles if it is a nice distribution or else do an empirical bootstrap.
+
+    \item Applied Qual 2021 Question 6
+      \begin{enumerate}[label=(\arabic*)]
+        \item (Why isn't the intercept zero?) This is an artifact from fitting the least squares criteria. Since the linear model is an approximation to a potentially non linear relationship, there may be measurement noise, and
+          there maybe a lack of data points of trees near $x=0$, hence the model is extrapolating and in order to minimize the sum of squared errors this would result in the intercept being a non zero value.
+        \item See written notes: main takeaway is for KNN note what kinds of points are near a query/test point.
+        \item See written notes.
+      \end{enumerate}
+    \item Applied Qual 2004 Question 4
+      \begin{enumerate}[label=(\arabic*)]
+        \item Advantages to putting all points on edges of range: minimize variance of regression slope coefficient estimate. Disadvantage: if relationship is not perfectly linear the estimates will be very poor, cannot check for non linearity.
+        \item Uniformly sample the range and do residual bootstrap to check the quantile of the $F$-ratio value comparing a quadratic model with a linear model. Could also look to see if slope estimate is 0 ($t$-test) or equivalently the $F$ test.
+      \end{enumerate}
   \end{enumerate}
 
 \end{itemize}
