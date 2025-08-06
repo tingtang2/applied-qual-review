@@ -436,7 +436,12 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
       \end{enumerate}
 
       \textbf{M step:} Maximize expected value of the complete data log likelihood to estimate global parameters $\theta$, analogous to MLE.
-      Update $\pi_k$ by taking average responsibility over data. Update $\alpha, \beta, \sigma^2$ by doing a weighted least squares regression, where $t_i$ is a distribution and we use the responsibility weights calculated in the E step.
+      Update $\pi_k$ by taking average responsibility over data.
+      $$Q_{\pi}(\pi) = \sum_{i=1}^n E \left[ \sum_{k=1}^3 I(z_i=k) \log(\pi_k) \right] = \sum_{i=1}^n \sum_{k=1}^3 E[I(z_i=k)] \log(\pi_k)$$Since $E[I(z_i=k)] = p(z_i=k | a_i, h_i, \theta^{(j)}) = w_{ik}^{(j)}$, this simplifies to:$$Q_{\pi}(\pi) = \sum_{i=1}^n \sum_{k=1}^3 w_{ik}^{(j)} \log(\pi_k)$$We need to maximize this function subject to the constraint that $\sum_{k=1}^3 \pi_k = 1$. We use a Lagrange multiplier, $\lambda$.$$\mathcal{L}(\pi, \lambda) = \sum_{i=1}^n \sum_{k=1}^3 w_{ik}^{(j)} \log(\pi_k) + \lambda(1 - \sum_{k=1}^3 \pi_k)$$Taking the derivative with respect to $\pi_k$ and setting it to zero:$$\frac{\partial \mathcal{L}}{\partial \pi_k} = \sum_{i=1}^n \frac{w_{ik}^{(j)}}{\pi_k} - \lambda = 0 \implies \pi_k = \frac{\sum_{i=1}^n w_{ik}^{(j)}}{\lambda}$$To find $\lambda$, we sum over all $k$ and use the constraint:$$\sum_{k=1}^3 \pi_k = 1 \implies \frac{1}{\lambda} \sum_{k=1}^3 \sum_{i=1}^n w_{ik}^{(j)} = 1$$The sum $\sum_{k=1}^3 \sum_{i=1}^n w_{ik}^{(j)} = \sum_{i=1}^n \sum_{k=1}^3 w_{ik}^{(j)}$. Since $\sum_{k=1}^3 w_{ik}^{(j)} = 1$ for any child $i$, the total sum is simply $n$.$$\frac{n}{\lambda} = 1 \implies \lambda = n$$
+
+      Update $\alpha, \beta, \sigma^2$ by doing a weighted least squares regression, where we use the values for $\mathbb{E}_{\mathbf{t}, \mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)}}[t_i]$ and
+      $\mathbb{E}_{\mathbf{t}, \mathbf{\delta} | \mathbf{x}, \mathbf{y}, \theta^{(0)}}[t_i^2]$ that we calculated in the E step above in place of $t_i$ and $t_i^2$. \\
+
       To do inference on the true age of a child, we calculate
       \[p(t_i| \mathbf{x}, \mathbf{y}, \hat{\theta}) = \sum_{k=1}^{3} p(t_i| \delta=k, \mathbf{x}, \mathbf{y}, \hat{\theta}) p(\delta=k| \mathbf{x}, \mathbf{y}, \hat{\theta})  \]
       From this probability distribution we can calculate a point estimate and look at the quantiles if it is a nice distribution or else do an empirical bootstrap.
