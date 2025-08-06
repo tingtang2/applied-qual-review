@@ -297,8 +297,83 @@ hence the CI we do use is
   \item multicollinearity - use instrumental variables
   \item Linearity and additivity violated, use log transformation - We prefer natural logs (that is, logarithms base e) because, as described above, coefficients on the natural-log scale are directly interpretable as approximate proportional differences
   \item correlated errors or latent variables to capture violations of the independence assumption, and models for varying variances and nonnormal errors.
+    \begin{itemize}
+      \item Use mixed effect models when there are relationships between data points (there is a known relationship in the noise). Mixed effects as a
+        mix of random effects and fixed effects and are defined as
+        \[ Y = X\beta + Zb + \varepsilon \]
+        where $\beta$ represents $p$ fixed effects - an unknown constant that we estimate from the data and affects the mean of the response.
+        $b$ represents $q$ random effects where $b \sim \mathcal{N}(0, \sigma^2_b I)$ for simplicity. Here we're mainly
+        interested in estimating the parameters of the distribution, $Z$ is a correlation structure that is given to us beforehand. Random effects are convenient to address correlated observations.
+        Some quantities of the marginal (marginalizing out $b$) are
+        \begin{align*}
+          \mathbb{E}[y | X, Z] &= X\beta\\
+          \mathtt{Var}[y | X, Z] &= \mathtt{Var}[Zb] + \mathtt{Var}[\varepsilon] = \sigma^2_b Z Z^\top + \sigma^2 I =: \Sigma \\
+          -2 \log \mathcal{L} &= n \log(2\pi) + \log |\Sigma| + (y - X \beta)^\top \Sigma^{-1} (y - X\beta)
+        \end{align*}
+        Conditional on $b$ we also have
+        \begin{align*}
+          \mathbb{E}[y | b] &= X \beta + Zb\\
+          \mathtt{Var}[y | b] &= \mathtt{Var}[\varepsilon] = \sigma^2 I
+        \end{align*}
+        Estimation:
+        \begin{itemize}
+          \item \textbf{Estimate $\beta$: generalized least squares}
+
+            \[
+              y = X\beta + \epsilon, \quad \epsilon \sim \mathcal{N}(0, \Sigma)
+            \]
+
+            \[
+              \underbrace{\Sigma^{-1/2} y}_{\tilde{y}} = \underbrace{\Sigma^{-1/2} X}_{\tilde{X}} \beta + \underbrace{\Sigma^{-1/2} \epsilon}_{\tilde{\epsilon}}, \quad \tilde{\epsilon} \sim \mathcal{N}(0, I)
+            \]
+
+            Now applying least squares
+
+            \[
+              \hat{\beta} = (\tilde{X}^\top \tilde{X})^{-1} \tilde{X}^\top \tilde{y}
+              = (X^\top \Sigma^{-1} X)^{-1} X^\top \Sigma^{-1} y
+            \]
+
+          \item \textbf{Estimate $\sigma^2$ and $\sigma_b^2$:} minimizing
+
+            \[
+              \ell \propto \log |\Sigma| + r^\top \Sigma^{-1} r
+            \]
+            where $r = y - X \hat{\beta}$.
+
+          \item\textbf{Computation}
+            \begin{itemize}
+              \item EM algorithm
+              \item Newton-Ralphson
+            \end{itemize}
+
+        \end{itemize}
+    \end{itemize}
   \item Using observed data to represent a larger population, Duplicate observations, Unequal variances - Weighted regression
-  \item Leverage - point furthest away from $\bar{x}$ has most leverage
+  \item Leverage - point furthest away from $\bar{x}$ has most leverage. Formally leverage is defined as the diagonal elements of the hat matrix
+    \[l_i = H_{ii} = [X(X^\top X )^{-1} X^\top]_{ii}\]
+    $l_i \in [0, 1]$. Having a high leverage implies a small residual ($r_i = \sigma^2 (1-l_i)$) and hence forces the regression line to model the point well.
+    The leverage does not depend on the observed value of $y_i$ at all.
+  \item Cook's distance is another diagnostic measure used to the influence of a data point and potentially identify outliers. For a
+    data point $i$ is it defined as the sum of all changes in the regression model when observation $i$ is removed from it, or
+    \[ D_i = \frac{\sum_{j=1}^{n} (\hat{y}_j - \hat{y}_{j(i)}^2)}{p \hat{\sigma}^2} = \frac{r_i^2}{p \hat{\sigma}^2}\left[\frac{h_{ii}}{(1 - h_{ii})^2}\right] \]
+    where $p$ is the rank of the model. Takeaway: high leverage and high residual points (therefore having a large Cook's distance) are likely to be outliers.
+  \item Variable selection:
+    \begin{itemize}
+      \item Adjusted $R^2$: adjust for model complexity
+        \[ \mathtt{adj. }R^2 = 1 - \frac{SSE/(n - p -1)}{SST/(n-1)} \]
+      \item Mallow's $C_p$ is another metric to see if you're overfitting
+        \[C_p = SSE + 2 \hat{\sigma}p\]
+      \item BIC (based on negative log likelihood assuming Gaussian noise), more consistent (small $p$ large $n$ asymptotics: if true model is $\mathcal{M}_*$ then $\mathbb{P}(\hat{\mathcal{M}} = \mathcal{M}_*) \rightarrow 1$ as $n \rightarrow \infty$ is known as consistency).
+        \[BIC(\mathcal{M}) = n \log (S_{\mathcal{M}}/n) + |\mathcal{M}| \log n\]
+      \item AIC (based on negative log likelihood assuming Gaussian noise), more efficient $\left(\frac{||Y - X_{\hat{\mathcal{M}}} \hat{\beta}_{\hat{\mathcal{M}}}||^2}{||Y - X_{\mathcal{M}_*} \hat{\beta}_{\mathcal{M}_*}||^2} \xrightarrow{p} 1\right)$
+        \[AIC(\mathcal{M}) = n \log (S_{\mathcal{M}}/n) + 2|\mathcal{M}|\]
+      \item Leave one out lemma:
+        \[ CV_{\text{error}} = \sum_{i=1}^{n} (\hat{y}_i^{[-i]} - y_i)^2 = \frac{1}{n} \sum_{i=1}^{n} \left(\frac{\hat{y}_i - y_i}{1 - h_{ii}}\right)^2\]
+      \item Generalized cross validation:
+        \[ GCV(\mathcal{M}) = \frac{SSE_{\mathcal{M}}}{(n - |\mathcal{M}|)^2} \]
+      \item $L_1$ regularization focuses on minimizing the bias squared term of MSE while $L_2$ focuses on minimizing the variance term.
+    \end{itemize}
 \end{itemize}
 \subsubsection{Model selection/regularization}
 L1/L2 regularization, use cross validation/valdiation set for model selection, Adjusted-$R^2$
