@@ -554,7 +554,12 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
       \begin{itemize}
         \item If there's no systemic error, allocating points where there is the most measurement variance results in the best regression coefficient estimates. Assign 1/3 of points to 1 and 2/3 of points to 3 since assigning any points to the middle does not help at all.
         \item Weighted least squares setup: want to min $\sum_{i=1}^{n}w_i(y_i - X_i \beta)^2$ for non negative weights $w_1, \ldots, w_n$. Then the regression coefficient estimates are
-          \[ \hat{\beta} = (X^\top W^{-1} X)^{-1} X^\top W Y \]
+          \[ \hat{\beta} = (X^\top W X)^{-1} X^\top W Y \]
+          Equivalently for simple regression
+          \begin{align*}
+            \hat{\alpha} &= \frac{1}{\sum_{i=1}^{n}w_i} \sum_{i=1}^{n}w_i y_i - \hat{\beta} \frac{1}{\sum_{i=1}^{n}w_i} \sum_{i=1}^{n}w_i x_i = \bar{y}_w - \hat{\beta} \bar{x}_w\\
+            \hat{\beta} &= \frac{\sum_{i=1}^{n} w_i (x_i - \bar{x}_w)(y_i - \bar{y}_w)}{\sum_{i=1}^{n} w_i (x_i - \bar{x}_w)^2}
+          \end{align*}
       \end{itemize}
     \item Applied Qual 2014 Question 4
       \begin{itemize}
