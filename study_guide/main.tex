@@ -533,6 +533,33 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
         \item Advantages to putting all points on edges of range: minimize variance of regression slope coefficient estimate. Disadvantage: if relationship is not perfectly linear the estimates will be very poor, cannot check for non linearity.
         \item Uniformly sample the range and do residual bootstrap to check the quantile of the $F$-ratio value comparing a quadratic model with a linear model. Could also look to see if slope estimate is 0 ($t$-test) or equivalently the $F$ test.
       \end{enumerate}
+    \item Applied Qual 2019 Question B
+      \begin{enumerate}[label=(\arabic*)]
+        \item LDA (assumptions are directly met), LogReg (linear decision boundary), QDA (normality assumption correct but too flexible, causes variance term of MSE to go up), KNN (too flexible again, variance goes up with no reduction in bias)
+        \item QDA (assumptions are directly met), KNN (underlying decision boundary could be quadratic), LDA (normality assumption correct, but incurs high bias), LogReg (also incurs high bias)
+        \item KNN (bias term of MSE goes down due to flexibility), QDA (more flexible decision boundary), LogReg/LDA
+      \end{enumerate}
+    \item Applied Qual 2018 Question 5
+      \begin{itemize}
+        \item LDA discriminant function equation
+          \[ \delta_k (x) = x^\top \Sigma^{-1}\hat{\mu}_k  - \frac{1}{2} \hat{\mu}_k^\top \hat{\Sigma}^{-1} \hat{\mu}_k + \log \hat{\pi}_k \]
+          Logistic regression handles unbalanced classes better than LDA.
+      \end{itemize}
+    \item Applied Qual 2019 Question D
+      \begin{itemize}
+        \item Bias-variance tradeoff: as you increase model complexity your bias decreases generally but your variance will generally increase.
+        \item If you know the Bayes error rate, then when the training error rate goes below the Bayes error rate, that is when overfitting begins/clear symptom of overfitting. Where the test error starts increasing is when overfitting starts to have a negative impact on the model's usefulness, and is conventionally considered the point where overfitting begins.
+      \end{itemize}
+    \item Applied Qual 2014 Question 3
+      \begin{itemize}
+        \item If there's no systemic error, allocating points where there is the most measurement variance results in the best regression coefficient estimates. Assign 1/3 of points to 1 and 2/3 of points to 3 since assigning any points to the middle does not help at all.
+        \item Weighted least squares setup: want to min $\sum_{i=1}^{n}w_i(y_i - X_i \beta)^2$ for non negative weights $w_1, \ldots, w_n$. Then the regression coefficient estimates are
+          \[ \hat{\beta} = (X^\top W^{-1} X)^{-1} X^\top W Y \]
+      \end{itemize}
+    \item Applied Qual 2014 Question 4
+      \begin{itemize}
+        \item $p$-value is distributed for the null hypothesis and the assumptions are met. Some violations include the true distribution of the data not following the data (ex. regression assumptions not being met, so $t$-dist might not be right), or when the test statistic is discrete (like a $\chi^2$ test). When the model assumptions are violated, the calculated p-values will not be uniformly distributed under the null. If the data has heavier tails than a normal distribution, for example, you might get more extreme test statistics than expected, leading to an excess of small p-values and an inflated Type I error rate (i.e., you reject the null hypothesis more often than the significance level $\alpha$ suggests you should).
+      \end{itemize}
   \end{enumerate}
 
 \end{itemize}
