@@ -569,6 +569,19 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
 
 \end{itemize}
 
+\subsection{Experimental Design}
+Mostly notes and good equations to know from ROS.
+
+\subsubsection{Standard errors and confidence intervals}
+\textbf{Averages and proportions}: standard error - $\sqrt{\hat{p}(1-\hat{p})/n}$ (normal approximation to binomial distribution), acceptable when $n - y$ and $y$ are both greater than 5.
+if not we standard correction is $\hat{p} = \frac{y + 2}{n+4}$ with standard error $\sqrt{\hat{p}(1 - \hat{p})/(n+4)}$ while truncating the confidence intervals to make sense.
+A ``good chance'' of distinguishing between two proportions can be interpreted as having the difference be equal to the standard error (or even 2 times so that a 95\% confidence interval will barely exclude zero).
+\\
+
+\textbf{Comparisons}: standard error of a difference - $\sqrt{se_1^2 + se_2^2}$ \\
+
+\textbf{Weighted average}: average proportion - $\frac{N_1}{N_{tot}}\hat{p}_1 + \frac{N_2}{N_{tot}}\hat{p}_2 + \ldots$, standard error - $\sqrt{(\frac{N_1}{N_{tot}} se_1)^2 + (\frac{N_2}{N_{tot}}se_2)^2 + \ldots}$
+
 \subsection{Logistic regression}
 \subsubsection{Model assumptions}
 \subsubsection{Estimation}
@@ -576,19 +589,19 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
 \subsubsection{Model diagnosis and refinement}
 \subsubsection{Model selection/regularization}
 
-\subsection{Non-parametric models}
-\subsubsection{Model assumptions}
-\subsubsection{Estimation}
-\subsubsection{Inference questions}
-\subsubsection{Model diagnosis and refinement}
-\subsubsection{Model selection/regularization}
+% \subsection{Non-parametric models}
+% \subsubsection{Model assumptions}
+% \subsubsection{Estimation}
+% \subsubsection{Inference questions}
+% \subsubsection{Model diagnosis and refinement}
+% \subsubsection{Model selection/regularization}
 
-\subsection{Models with latent components including mixed-effect/multilevel models, factor models, etc.}
-\subsubsection{Model assumptions}
-\subsubsection{Estimation}
-\subsubsection{Inference questions}
-\subsubsection{Model diagnosis and refinement}
-\subsubsection{Model selection/regularization}
+% \subsection{Models with latent components including mixed-effect/multilevel models, factor models, etc.}
+% \subsubsection{Model assumptions}
+% \subsubsection{Estimation}
+% \subsubsection{Inference questions}
+% \subsubsection{Model diagnosis and refinement}
+% \subsubsection{Model selection/regularization}
 
 \section{Bayesian Data Analysis}
 Applied and computational Bayesian statistics
