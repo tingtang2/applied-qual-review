@@ -291,6 +291,8 @@ hence the CI we do use is
 \end{enumerate}
 
 \textbf{Interpret coefficients:} ``Also the coefficient on sex is more interpretable as it directly represents on average, keeping  all other independent variables constant, the average increase/decrease in the tests scores of men compared to women.''
+`On average, one would expects the post test score of two students whose pre tests scores differ by 1 point to differ by 0.7 points.'
+`On average, one would expects the incumbent party’s vote share for two different elections where average recent growth in personal income in that year differ by 1 percentage point to differ by 3 percentage points.'
 \subsubsection{Model diagnosis and refinement}
 \begin{itemize}
   \item Autocorrelation
@@ -580,7 +582,14 @@ A ``good chance'' of distinguishing between two proportions can be interpreted a
 
 \textbf{Comparisons}: standard error of a difference - $\sqrt{se_1^2 + se_2^2}$ \\
 
-\textbf{Weighted average}: average proportion - $\frac{N_1}{N_{tot}}\hat{p}_1 + \frac{N_2}{N_{tot}}\hat{p}_2 + \ldots$, standard error - $\sqrt{(\frac{N_1}{N_{tot}} se_1)^2 + (\frac{N_2}{N_{tot}}se_2)^2 + \ldots}$
+\textbf{Weighted average}: average proportion - $\frac{N_1}{N_{tot}}\hat{p}_1 + \frac{N_2}{N_{tot}}\hat{p}_2 + \ldots$, standard error - $\sqrt{(\frac{N_1}{N_{tot}} se_1)^2 + (\frac{N_2}{N_{tot}}se_2)^2 + \ldots}$\\
+
+\subsubsection{Properties of regression}
+\begin{itemize}
+\item Regression with just an intercept results in predicting the sample mean of the $y$'s
+\item Regression with a binary indicator variable results in the coefficient estimate being the difference in the means of response variable for the 2 cases of the indicator variable, and the
+  standard error being the sqrt of the sum of the standard errors of each group.
+\end{itemize}
 
 \subsection{Logistic regression}
 \subsubsection{Model assumptions}
