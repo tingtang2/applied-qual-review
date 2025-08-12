@@ -584,6 +584,8 @@ A ``good chance'' of distinguishing between two proportions can be interpreted a
 
 \textbf{Weighted average}: average proportion - $\frac{N_1}{N_{tot}}\hat{p}_1 + \frac{N_2}{N_{tot}}\hat{p}_2 + \ldots$, standard error - $\sqrt{(\frac{N_1}{N_{tot}} se_1)^2 + (\frac{N_2}{N_{tot}}se_2)^2 + \ldots}$\\
 
+\textbf{Scaling sample size}: In general, by increasing the sample size by $N$ times you decrease the standard error by $1/\sqrt{N}$ times.
+
 \subsubsection{Properties of regression}
 \begin{itemize}
 \item Regression with just an intercept results in predicting the sample mean of the $y$'s
@@ -591,12 +593,39 @@ A ``good chance'' of distinguishing between two proportions can be interpreted a
   standard error being the sqrt of the sum of the standard errors of each group.
 \end{itemize}
 
+\subsubsection{Sample size/power calculations}
+\textbf{For distinguishing proportions}: If the goal is 80\% power to distinguish $p$ from a specified value $p_0$, then a conservative required sample size is that
+needed for the true parameter value to be 2.8 standard errors from zero; solving for this standard error
+yields $n = (2.8 \cdot 0.5/(p - p_0))^2$ or, more precisely, $n = p(1 - p)(2.8/(p - p_0))^2$\\
+
+\textbf{Comparison of proportions, equal sample sizes}: The standard error of a difference between two proportions is, by a simple probability calculation, $\sqrt{p_1 (1 - p_1)/n_1 + p_2 (1 - p_2)/n_2}$, which has an upper bound of $0.5\sqrt{ 1/n_1 + 1/n_2}$. If we assume
+$n_1 = n_2 = n/2$ (equal sample sizes in the two groups), the upper bound on the standard error becomes
+simply $1/\sqrt{n}$. A specified standard error can then be attained with a sample size of $n = 1/(s.e.)^2$. If
+the goal is 80\% power to distinguish between hypothesized proportions $p_1$ and $p_2$ with a study of size
+$n$, equally divided between the two groups, a conservative sample size is $n = ((2.8/(p_1 - p_2))^2$ or,
+more precisely, $n = 2(p_1 (1 - p_1) + p_2 (1 - p_2))(2.8/(p_1 - p_2))^2$. \\
+
+\textbf{Estimates of means}: If the goal is 80\% power to distinguish $\theta$ from a
+specified value $\theta_0$, then a conservative required sample size is $n = (2.8 \sigma/(\theta - \theta_0))^2$.
+
+\subsubsection{Missing data imputations/casual inference}
+Complete case analysis is where you throw out any data points with any missing attributes. Available case is where you throw out data that have missing attributes you're interested in studying.
+The Sample Average Treatment Effect (SATE) is the average of the individual treatment effects for all units in the sample,
+A simple regression of the observed outcome $y$ on the treatment indicator $z$ estimates the average treatment effect as the difference in the mean observed outcomes between the treated group and the control group.
+Using deterministic imputations results in too many values in the middle of the distribution.
 \subsection{Logistic regression}
+\subsubsection{Some properties}
+\textbf{Scaling and shifting the sigmoid/inverse logit function}: Scaling $x$ will cause the curve in the middle to sharpen/flatten. Shifting moves the midpoint ($y=0.5$) in the opposite direction of the shift away from $x=0$ by $a/b$ units.
+Can also find the midpoint by setting $a + bx = 0$\\
+
+\textbf{Divide by 4 rule}: ``From the divide by 4 rule, near the 50\% point, comparing two people who differ by one inch in height, you’ll expect a difference of 0.28/4 = 0.07 in the probability of being heavy.'' This is an upper bound on the predictive difference corresponding to a unit difference in $x$.\\
+
+\textbf{Log-odds}: \[ \log \frac{\mathbb{P}(y = 1 | X)}{\mathbb{P}(y = 0 | X)} = \alpha + \beta X \]
 \subsubsection{Model assumptions}
 \subsubsection{Estimation}
-\subsubsection{Inference questions}
-\subsubsection{Model diagnosis and refinement}
-\subsubsection{Model selection/regularization}
+% \subsubsection{Inference questions}
+% \subsubsection{Model diagnosis and refinement}
+% \subsubsection{Model selection/regularization}
 
 % \subsection{Non-parametric models}
 % \subsubsection{Model assumptions}
