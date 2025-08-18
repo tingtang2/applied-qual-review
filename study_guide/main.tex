@@ -571,6 +571,8 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
 
 \end{itemize}
 
+Regression dilution, also known as regression attenuation, is the biasing of the linear regression slope towards zero (the underestimation of its absolute value), caused by errors in the independent variable.
+
 \subsection{Experimental Design}
 Mostly notes and good equations to know from ROS.
 
@@ -642,17 +644,55 @@ Can also find the midpoint by setting $a + bx = 0$\\
 % \subsubsection{Model selection/regularization}
 
 \section{Bayesian Data Analysis}
-Applied and computational Bayesian statistics
-\subsection{Bayesian Hierarchical Modeling}
+Applied and computational Bayesian statistics\\
+
+Good to know: normal-normal posterior distribution with known variance
+\[ \mathcal{N}\left(\frac{\left( \frac{\mu_0}{\sigma_0^2} + \frac{\sum_{i=1}^{n}x_i}{\sigma^2} \right)^2}{\frac{n}{\sigma^2} + \frac{1}{\sigma_0^2}}, \left(\frac{n}{\sigma^2} + \frac{1}{\sigma_0^2}\right)^{-1}\right)\]
+% \subsection{Bayesian Hierarchical Modeling}
 \subsection{Fake-data simulation to design an experiment}
-\subsection{Modeling using splines/Gaussian processes}
-\subsection{Computational workflow}
+% \subsection{Modeling using splines/Gaussian processes}
+% \subsection{Computational workflow}
 
 \section{Statistical Machine Learning}
 \subsection{Linear and nonlinear dimensionality reduction}
+Good to memorize: Gaussian conditioning formula
+\begin{align*}
+  \begin{pmatrix}x_{1}\\
+    x_{2}
+  \end{pmatrix} &\sim  \mathcal{N}
+  \begin{pmatrix}
+    \begin{bmatrix}
+      \mu_1\\
+      \mu_2
+    \end{bmatrix}\!\!,&
+    \begin{bmatrix}
+      \Sigma_{11} & \Sigma_{12}\\
+      \Sigma_{21} & \Sigma_{22}
+    \end{bmatrix}
+  \end{pmatrix}\\[2\jot]
+  x_1 | x_2 &\sim \mathcal{N}(\mu_1 + \Sigma_{12}\Sigma_{22}^{-1}(x_2 - \mu_2), \Sigma_{11} - \Sigma_{12}\Sigma^{-1}_{22} \Sigma_{21})
+\end{align*}
+
+Woodbury matrix identity
+\[ (A + UCV)^{-1} = A^{-1} - A^{-1}U(C^{-1} + VA^{-1}U)^{-1}VA^{-1} \]
+
+Matrix calculus rules:
+\begin{align*}
+  \frac{\partial \log \det (A)}{\partial A} &= A^{-\top} \\
+  \frac{\partial \text{Tr}(AX^{-1}B) }{\partial X} &= -(X^{-1}BAX^{-1})^\top \\
+  \frac{\partial \beta^{\top} \Sigma \beta^{\top}}{\partial \beta} &= (\Sigma + \Sigma^\top)\beta
+\end{align*}
+
+Kernel PCA reconstruction - need to use eigenvectors of kernel Gram matrix \\
+
+Eckart–Young–Mirsky theorem: Best rank $k$ approximation of a matrix in the spectral norm is the SVD.
 \subsection{Data-driven and model-based classification methods}
+Bayes optimal classifier procedure
+
 \subsection{Data-driven and model-based clustering methods}
 \subsection{Graphical models: Bayesian networks, Markov random fields}
+Graphs factor by cliques
+
 \subsection{Latent variable models}
 \subsection{Introduction to Deep Learning: Deep generative models, Approximate inference}
 
