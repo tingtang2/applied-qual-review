@@ -567,6 +567,22 @@ L1/L2 regularization, use cross validation/valdiation set for model selection, A
       \begin{itemize}
         \item $p$-value is distributed for the null hypothesis and the assumptions are met. Some violations include the true distribution of the data not following the data (ex. regression assumptions not being met, so $t$-dist might not be right), or when the test statistic is discrete (like a $\chi^2$ test). When the model assumptions are violated, the calculated p-values will not be uniformly distributed under the null. If the data has heavier tails than a normal distribution, for example, you might get more extreme test statistics than expected, leading to an excess of small p-values and an inflated Type I error rate (i.e., you reject the null hypothesis more often than the significance level $\alpha$ suggests you should).
       \end{itemize}
+    \item Applied Qual 2020 Question B
+      \begin{itemize}
+        \item For categorical/nominal data you can use a $\chi^2$ goodness of fit test. Here the test statistic is
+          \[ \sum_{i=1}^{n} \frac{(\text{expected} - \text{observed})^2}{\text{expected}} \sim \chi^2_{n-1} \]
+          We can then check the $p$-value for level $\alpha=0.05$ and reject the null that the data is drawn from a Poisson distribution with mean 11.6. The procedure would lead to the conclusion that there is statistically significant evidence of overdispersion. The discrepancy is too large to be attributed to random chance from a small sample, which contradicts Professor Jones's initial suggestion and supports his assertion that the model is not appropriate.
+        \item The problem likely is that each count is Poisson but not identically distributed. That is we would expect the mean parameter to be different for each national park.
+          One solution is to use a negative binomial model to the counts, which allows for more variance compared to a Poisson distribution. Another more sophisticated model could be to use a Bayesian hierarchical model,
+          where the lambda for each park is drawn from a Gamma prior. This Gamma-Poisson mixture model is mathematically equivalent to the Negative Binomial model. Its advantage is that it directly models the source of the overdispersion (the variation in the lambdas). Jane could then estimate the average salamander count across all parks (expected value of lambda) and also quantify the variation between parks (variance of lambda), providing a richer answer about the "spread" of the salamander population.
+          You can fit alpha and beta for the Gamma distribution via an Empirical Bayes procedure, like method of moments, or do MLE with posterior distribution since it's conjugate.
+      \end{itemize}
+    \item Applied Qual 2018 Question 3
+      \begin{itemize}
+        \item Did not correct for multiple testing (genetic variants are not independent of each other and are in fact highly correlated). One way
+          to correct for this is to do PCA beforehand to denoise highly correlated variants, and then run Lasso Regression to see which components are predictive in
+          of Biasphobia. Finally we can check the loadings to see which genetic variants play a role in predicting Biasphobia.
+      \end{itemize}
   \end{enumerate}
 
 \end{itemize}
