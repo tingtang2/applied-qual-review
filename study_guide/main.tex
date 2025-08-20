@@ -699,18 +699,32 @@ Matrix calculus rules:
   \frac{\partial \beta^{\top} \Sigma \beta^{\top}}{\partial \beta} &= (\Sigma + \Sigma^\top)\beta
 \end{align*}
 
-Kernel PCA reconstruction - need to use eigenvectors of kernel Gram matrix \\
+PPCA equations to know:
+\begin{align*}
+  \text{(from PPCA paper)} \  \frac{\partial L}{\partial \Lambda} &= N (C^{-1}S C^{-1}\Lambda - C^{-1}\Lambda)\\
+  \Lambda &= SC^{-1} \Lambda \ \text{(for non trivial solutions consider SVD of $\Lambda$)} \\
+  &\text{For MLE of $\sigma^2$ consider eigendecomposition of S and note } C = UD'U^T
+\end{align*}
+
+Kernel PCA reconstruction - need to use eigenvectors of kernel Gram matrix - $z_{ik} = \sum_{j=1}^n \alpha_{kj} K(X_j, X_i)$ \\
 
 Eckart–Young–Mirsky theorem: Best rank $k$ approximation of a matrix in the spectral norm is the SVD.
 \subsection{Data-driven and model-based classification methods}
-Bayes optimal classifier procedure
+Bayes optimal classifier procedure - estimate conditional probability $P(Y=k|X)$ via Bayes rule and plugin estimate.
 
 \subsection{Data-driven and model-based clustering methods}
+For $K$-means type algorithms note that $L(z^{(i)}, \Sigma^{(i)}) \leq L(z^{(i)}, \Sigma^{(i-1)}) \leq L(z^{(i-1)}, \Sigma^{(i-1)})$ since loss is convex.
 \subsection{Graphical models: Bayesian networks, Markov random fields}
-Graphs factor by cliques
+Graphs factor by cliques \\
+Bayes Ball algorithm for determining if there are conditional independence relationships in a DAG: a path is blocked if it
+contains an observed (part of conditioning set) non-collider node (like a chain or fork) or a collider node that is not observed and none of its descendants are observed.
 
 \subsection{Latent variable models}
-Summation inside the logs (e.g. mixture models) breaks concavity in log likelihoods and thus requires us to use EM type algorithms.
+Summation inside the logs (e.g. mixture models) breaks concavity in log likelihoods and thus requires us to use EM type algorithms.\\
+\subsubsection{VI}
+If $z_n$ is drawn from a categorical distribution then
+\[ q(z) \propto \prod_{i=1}^{N}\prod_{k=1}^{K} (e^{\rho_{nk}})^{z_{nk}}\]
+Then $q(z_nk = 1) = \frac{\rho_{nk}}{\sum_{k'=1}^{K}\rho_{nk'}}$
 \subsection{Introduction to Deep Learning: Deep generative models, Approximate inference}
 
 \section{Computation}
